@@ -1,4 +1,10 @@
-const { connect, keyStores: { InMemoryKeyStore } } = require('near-api-js');
+const {
+    connect,
+    keyStores: { InMemoryKeyStore },
+    WalletConnection,
+    ConnectedWalletAccount,
+    transactions: { functionCall },
+} = require('near-api-js');
 
 async function withNear(ctx, next) {
     const config = require('./config')(process.env.NODE_ENV || 'development')
@@ -16,6 +22,8 @@ const app = new Koa();
 
 const Router = require('koa-router');
 const router = new Router();
+
+const koaBody = require('koa-body')();
 
 router.get('/web4/contract/:contractId/:methodName', withNear, async ctx => {
     const {
@@ -35,16 +43,75 @@ router.get('/web4/contract/:contractId/:methodName', withNear, async ctx => {
     ctx.body = await account.viewFunction(contractId, methodName, methodParams);
 });
 
-router.get('/web4/login');
-// TODO: Generate private key, return in cookie and redirect to wallet for login
+router.get('/web4/login', withNear, async ctx => {
+    // TODO: Generate private key, return in cookie?
+
+    const walletConnection = new WalletConnection(ctx.near);
+    
+    // TODO: Should allow passing callback URL?
+    const loginCompleteUrl = `${ctx.origin}/web4/login/complete`;
+    ctx.redirect(walletConnection.signInURL({
+        successUrl: loginCompleteUrl,
+        failureUrl: loginCompleteUrl
+    }))
+});
+
+router.get('/web4/login/complete', async ctx => {
+    const { account_id, all_keys } = ctx.query;
+    if (account_id) {
+        ctx.cookies.set('web4_account_id', account_id);
+        ctx.cookies.set('web4_all_keys', all_keys);
+        ctx.body = `Logged in as ${account_id}`;
+    } else {
+        ctx.body = `Couldn't login`;
+    }
+});
 
 router.post('/web4/logout');
 // TODO: Remove private key cookie (ideally also somehow remove key from account?)
 
-router.post('/web4/contract/:contractId/:methodName', withNear, async ctx => {
-    // TODO: Sign transaction with private key and account from cookies
+const DEFAULT_GAS = '300' + '000000000000';
 
+router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, async ctx => {
+    // TODO: Sign transaction with private key and account from cookies
     // TODO: Accept both json and form submission
+
+    const accountId = ctx.cookies.get('web4_account_id');
+    if (!accountId) {
+        ctx.redirect('/web4/login');
+        return;
+    }
+
+    const allKeys = (ctx.cookies.get('web4_all_keys') || '').split(',');
+
+    const { contractId, methodName } = ctx.params;
+    const { body } = ctx.request;
+    const { web4_gas: gas, web4_deposit: deposit } = body;
+    const args = Object.keys(body)
+        .filter(key => !key.startsWith('web4_'))
+        .map(key => ({ [key]: body[key] }))
+        .reduce((a, b) => ({...a, ...b}), {});
+
+    // TODO: Test this
+    const walletConnection = new WalletConnection(ctx.near, 'web4', { allKeys });
+    const account = new ConnectedWalletAccount(walletConnection, ctx.near.connection, accountId);
+    // TODO: walletConnection.account();
+    const transaction = await account.createTransaction(contractId, [
+        functionCall(methodName, args, gas || DEFAULT_GAS, deposit || '0')
+    ]);
+    const url = walletConnection.signTransactionsURL([transaction], ctx.origin)
+    ctx.redirect(url);
+    // TODO: Need to do something else than wallet redirect for CORS-enabled fetch
+});
+
+// TODO: Remove this demo, build actual smart-contract based website
+router.get('/test', async ctx => {
+    ctx.body = `
+        <form action="/web4/contract/guest-book.testnet/addMessage" method="post">
+            <textarea name="text"></textarea>
+            <button name="submit">Post</button>
+        </form>
+    `
 });
 
 // TODO: Do contract method call according to mapping returned by web4_routes contract method
