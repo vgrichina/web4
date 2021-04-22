@@ -26,6 +26,8 @@ export function web4_get(request: Web4Request): Web4Response {
                 <button name="submit">Post</button>
             </form>
         `);
+    if (request.accountId) {
+        return htmlResponse('Hello to <b>' +  request.accountId! + '</b> from <code>' + request.path + '</code>');
     }
 
     return htmlResponse('Hello from <b>' + request.path + '</b>');

@@ -19,6 +19,20 @@ async function withNear(ctx, next) {
     await next();
 }
 
+async function withAccountId(ctx, next) {
+    const accountId = ctx.cookies.get('web4_account_id');
+    ctx.accountId = accountId;
+    await next();
+}
+
+async function requireAccountId(ctx, next) {
+    if (!ctx.accountId) {
+        ctx.redirect('/web4/login');
+        return;
+    }
+    await next();
+}
+
 const Koa = require('koa');
 const app = new Koa();
 
@@ -74,7 +88,7 @@ router.post('/web4/logout');
 
 const DEFAULT_GAS = '300' + '000000000000';
 
-router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, async ctx => {
+router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAccountId, requireAccountId, async ctx => {
     // TODO: Sign transaction with private key and account from cookies
     // TODO: Accept both json and form submission
 
@@ -109,9 +123,10 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, async c
 // TODO: Do contract method call according to mapping returned by web4_routes contract method
 // TODO: Use web4_get method in smart contract as catch all if no mapping?
 // TODO: Or is mapping enough?
-router.get('/(.*)', withNear, async ctx => {
+router.get('/(.*)', withNear, withAccountId, async ctx => {
     // TODO: Allow returning different types of content, including references to external stuff like IPFS
     const {
+        accountId,
         path,
         query,
         near
@@ -122,6 +137,7 @@ router.get('/(.*)', withNear, async ctx => {
     const parsedQuery = qs.parse(query);
     const methodParams = {
         request: {
+            accountId,
             path,
             query: Object.keys(parsedQuery)
                 .map(key => ({ [key] : parsedQuery[key].length ? parsedQuery[key] : [parsedQuery[key]] }))
