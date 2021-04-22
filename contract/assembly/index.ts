@@ -7,12 +7,14 @@ class Web4Request {
     path: string;
     params: Map<string, string>;
     query: Map<string, Array<string>>;
+    preloads: Map<string, Web4Response>;
 }
 
 @nearBindgen
 class Web4Response {
     contentType: string;
     body: Uint8Array;
+    preloadUrls: string[] = [];
 }
 
 class HtmlAttributes {
@@ -77,12 +79,27 @@ function htmlResponse(text: string): Web4Response {
     return { contentType: 'text/html; charset=UTF-8', body: util.stringToBytes(text) };
 }
 
+function preloadUrls(urls: string[]): Web4Response {
+    return { preloadUrls: urls };
+}
+
 export function web4_get(request: Web4Request): Web4Response {
     if (request.path == '/test') {
         return htmlResponse(form({ action: "/web4/contract/guest-book.testnet/addMessage" }, [
             textarea({ name: "text" }),
             button({ name: "submit" }, ["Post"])
         ]));
+    }
+
+    if (request.path == '/messages') {
+        const getMessagesUrl = '/web4/contract/guest-book.testnet/getMessages';
+        if (!request.preloads) {
+            return preloadUrls([getMessagesUrl]);
+        }
+        logging.log('getMessagesUrl ' + getMessagesUrl);
+        logging.log('>>> ' + request.preloads.keys().join(', '));
+
+        return htmlResponse('messages: ' + util.bytesToString(request.preloads.get(getMessagesUrl).body)!);
     }
 
     if (request.accountId) {

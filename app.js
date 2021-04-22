@@ -7,6 +7,9 @@ const {
 } = require('near-api-js');
 
 const qs = require('querystring');
+const fetch = require('node-fetch');
+
+const MAX_PRELOAD_HOPS = 5;
 
 async function withNear(ctx, next) {
     const config = require('./config')(process.env.NODE_ENV || 'development')
@@ -146,10 +149,35 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
     };
 
     const account = await near.account(contractId);
-    const res = await account.viewFunction(contractId, 'web4_get', methodParams);
-    const { contentType, body } = res;
-    ctx.type = contentType;
-    ctx.body = Buffer.from(body, 'base64');
+    for (let i = 0; i < MAX_PRELOAD_HOPS; i++) {
+        console.log('methodParams', methodParams)
+        const res = await account.viewFunction(contractId, 'web4_get', methodParams);
+        const { contentType, body, preloadUrls } = res;
+        
+        if (body) {
+            ctx.type = contentType;
+            ctx.body = Buffer.from(body, 'base64');
+            return;
+        }
+
+        if (preloadUrls) {
+            const preloads = await Promise.all(preloadUrls.map(async url => {
+                const absoluteUrl = new URL(url, ctx.origin).toString();
+                const res = await fetch(absoluteUrl);
+                return [url, {
+                    contentType: res.headers.get('content-type'),
+                    body: (await res.buffer()).toString('base64')
+                }];
+            }));
+            methodParams.request.preloads = preloads.map(([key, value]) => ({[key] : value}))
+                .reduce((a, b) => ({...a, ...b}), {});
+            continue;
+        }
+
+        break;
+    }
+
+    ctx.throw(502, 'too many preloads');
 });
 
 // TODO: submit transaction mapping path to method name
@@ -159,8 +187,6 @@ router.post('/(.*)', ctx => {
 
 
 // TODO: Need to query smart contract for rewrites config
-
-
 
 app
     .use(async (ctx, next) => {
