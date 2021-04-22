@@ -4,6 +4,18 @@
   "description": "Web3 using plain HTTP",
   "main": "app.js",
   "license": "MIT",
+  "scripts": {
+    "build": "npm run build:contract",
+    "build:contract": "cd contract && npm run build:release",
+    "build:contract:debug": "cd contract && npm run build:debug",
+    "dev:deploy:contract": "near dev-deploy --wasmFile contract/build/debug/greeter.wasm",
+    "deploy:contract": "near deploy --wasmFile contract/build/release/greeter.wasm",
+    "deploy": "npm run build:contract && npm run deploy:contract",
+    "prestart": "npm run build:contract:debug && npm run dev:deploy:contract",
+    "start": "env-cmd -f ./neardev/dev-account.env nodemon app --watch . -e js",
+    "dev": "nodemon --watch contract -e ts --exec \"npm run start\"",
+    "test": "npm run build:contract:debug && node contract/test && jest test --runInBand"
+  },
   "dependencies": {
     "koa": "^2.13.1",
     "koa-body": "^4.2.0",
@@ -11,6 +23,7 @@
     "near-api-js": "^0.39.0"
   },
   "devDependencies": {
+    "env-cmd": "^10.1.0",
     "nodemon": "^2.0.7"
   }
 }

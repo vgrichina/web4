@@ -1,0 +1,22 @@
+{
+  "name": "greeter",
+  "version": "0.0.1",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "as-bignum": "^0.2.7",
+    "asbuild": "^0.0.8",
+    "near-sdk-as": "2.2.0"
+  },
+  "devDependencies": {
+    "shelljs": "^0.8.4"
+  },
+  "resolutions": {
+    "as-bignum": "0.2.7",
+    "near-sdk-core": "2.2.0"
+  },
+  "scripts": {
+    "build:release": "asb --verbose --target release",
+    "build:debug": "asb --verbose --target debug"
+  }
+}

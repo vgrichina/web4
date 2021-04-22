@@ -6,6 +6,8 @@ const {
     transactions: { functionCall },
 } = require('near-api-js');
 
+const qs = require('querystring');
+
 async function withNear(ctx, next) {
     const config = require('./config')(process.env.NODE_ENV || 'development')
     // TODO: Why no default keyStore?
@@ -104,22 +106,34 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, async c
     // TODO: Need to do something else than wallet redirect for CORS-enabled fetch
 });
 
-// TODO: Remove this demo, build actual smart-contract based website
-router.get('/test', async ctx => {
-    ctx.body = `
-        <form action="/web4/contract/guest-book.testnet/addMessage" method="post">
-            <textarea name="text"></textarea>
-            <button name="submit">Post</button>
-        </form>
-    `
-});
-
 // TODO: Do contract method call according to mapping returned by web4_routes contract method
 // TODO: Use web4_get method in smart contract as catch all if no mapping?
 // TODO: Or is mapping enough?
-router.get('/(.*)', ctx => {
+router.get('/(.*)', withNear, async ctx => {
     // TODO: Allow returning different types of content, including references to external stuff like IPFS
-    ctx.body = ctx.path;
+    const {
+        path,
+        query,
+        near
+    } = ctx; 
+
+    const contractId = process.env.CONTRACT_NAME;
+
+    const parsedQuery = qs.parse(query);
+    const methodParams = {
+        request: {
+            path,
+            query: Object.keys(parsedQuery)
+                .map(key => ({ [key] : parsedQuery[key].length ? parsedQuery[key] : [parsedQuery[key]] }))
+                .reduce((a, b) => ({...a, ...b}), {})
+        }
+    };
+
+    const account = await near.account(contractId);
+    const res = await account.viewFunction(contractId, 'web4_get', methodParams);
+    const { contentType, body } = res;
+    ctx.type = contentType;
+    ctx.body = Buffer.from(body, 'base64');
 });
 
 // TODO: submit transaction mapping path to method name
