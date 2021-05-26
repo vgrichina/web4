@@ -19,7 +19,18 @@ async function withNear(ctx, next) {
 
     Object.assign(ctx, { config, keyStore, near });
 
-    await next();
+    try {
+        await next();
+    } catch (e) {
+        switch (e.type) {
+            case 'AccountDoesNotExist':
+                ctx.throw(404, e.message);
+            case 'UntypedError':
+                ctx.throw(400, e.message);
+            default:
+                throw e;
+        }
+    }
 }
 
 async function withAccountId(ctx, next) {
