@@ -85,26 +85,30 @@ function preloadUrls(urls: string[]): Web4Response {
 
 export function web4_get(request: Web4Request): Web4Response {
     if (request.path == '/test') {
+        // Render HTML with form to submit a message
         return htmlResponse(form({ action: "/web4/contract/guest-book.testnet/addMessage" }, [
             textarea({ name: "text" }),
             button({ name: "submit" }, ["Post"])
         ]));
     }
 
+
     if (request.path == '/messages') {
         const getMessagesUrl = '/web4/contract/guest-book.testnet/getMessages';
+        // Request preload of dependency URLs
         if (!request.preloads) {
             return preloadUrls([getMessagesUrl]);
         }
-        logging.log('getMessagesUrl ' + getMessagesUrl);
-        logging.log('>>> ' + request.preloads.keys().join(', '));
 
+        // Render HTML with messages
         return htmlResponse('messages: ' + util.bytesToString(request.preloads.get(getMessagesUrl).body)!);
     }
 
     if (request.accountId) {
+        // User is logged in, we can welcome them
         return htmlResponse('Hello to <b>' +  request.accountId! + '</b> from <code>' + request.path + '</code>');
     }
 
+    // By default just render current path to demonstrate dynamic content
     return htmlResponse('Hello from <b>' + request.path + '</b>');
 }
