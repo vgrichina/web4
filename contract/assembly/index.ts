@@ -14,6 +14,7 @@ class Web4Request {
 class Web4Response {
     contentType: string;
     body: Uint8Array;
+    bodyUrl: string;
     preloadUrls: string[] = [];
 }
 
@@ -83,6 +84,10 @@ function preloadUrls(urls: string[]): Web4Response {
     return { preloadUrls: urls };
 }
 
+function bodyUrl(url: string): Web4Response {
+    return { bodyUrl: url };
+}
+
 export function web4_get(request: Web4Request): Web4Response {
     if (request.path == '/test') {
         // Render HTML with form to submit a message
@@ -91,7 +96,6 @@ export function web4_get(request: Web4Request): Web4Response {
             button({ name: "submit" }, ["Post"])
         ]));
     }
-
 
     if (request.path == '/messages') {
         const getMessagesUrl = '/web4/contract/guest-book.testnet/getMessages';
@@ -107,6 +111,12 @@ export function web4_get(request: Web4Request): Web4Response {
     if (request.accountId) {
         // User is logged in, we can welcome them
         return htmlResponse('Hello to <b>' +  request.accountId! + '</b> from <code>' + request.path + '</code>');
+    }
+
+    // Demonstrate serving content from IPFS
+    if (request.path = "/") {
+        // TODO: Use and support ipfs: protocol?
+        return bodyUrl('https://bafybeihymlthto6dy6x4qugdfptlt7saydb6uuouqbewdsuregfu77xliq.ipfs.infura-ipfs.io/')
     }
 
     // By default just render current path to demonstrate dynamic content

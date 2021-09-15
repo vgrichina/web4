@@ -6,10 +6,12 @@
   "license": "MIT",
   "scripts": {
     "build": "npm run build:contract",
+    "build:website": "mkdir -p dist && marked -i README.md -o dist/index.html",
     "build:contract": "cd contract && npm run build:release",
     "build:contract:debug": "cd contract && npm run build:debug",
     "dev:deploy:contract": "near dev-deploy --wasmFile contract/build/debug/greeter.wasm",
     "deploy:contract": "near deploy web4.near --wasmFile contract/build/release/greeter.wasm ",
+    "deploy:website": "npm run build:website && ipfs-deploy dist/",
     "deploy": "npm run build:contract && npm run deploy:contract",
     "prestart": "npm run build:contract:debug && npm run dev:deploy:contract",
     "start": "env-cmd -f ./neardev/dev-account.env nodemon app --watch . -e js",
@@ -25,6 +27,8 @@
   },
   "devDependencies": {
     "env-cmd": "^10.1.0",
+    "ipfs-deploy": "^11.0.1",
+    "marked": "^3.0.4",
     "nodemon": "^2.0.7"
   }
 }

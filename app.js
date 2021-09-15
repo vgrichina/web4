@@ -60,7 +60,7 @@ router.get('/web4/contract/:contractId/:methodName', withNear, async ctx => {
         params: { contractId, methodName },
         query,
         near
-    } = ctx; 
+    } = ctx;
 
     const methodParams = Object.keys(query)
         .map(key => key.endsWith('.json')
@@ -144,7 +144,7 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
         path,
         query,
         near
-    } = ctx; 
+    } = ctx;
 
     const contractId = ctx.host.endsWith('.near.page') ? ctx.host.replace(/.page$/, '') : process.env.CONTRACT_NAME;
 
@@ -162,11 +162,22 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
     const account = await near.account(contractId);
     for (let i = 0; i < MAX_PRELOAD_HOPS; i++) {
         const res = await account.viewFunction(contractId, 'web4_get', methodParams);
-        const { contentType, body, preloadUrls } = res;
-        
+        const { contentType, body, bodyUrl, preloadUrls } = res;
+
         if (body) {
             ctx.type = contentType;
             ctx.body = Buffer.from(body, 'base64');
+            return;
+        }
+
+        if (bodyUrl) {
+            // TODO: Add special handling for stuff like ipfs:
+            const absoluteUrl = new URL(bodyUrl, ctx.origin).toString();
+            const res = await fetch(bodyUrl);
+            ctx.body = res.body;
+            for (let [key, value] of res.headers.entries()) {
+                ctx.set(key, value);
+            }
             return;
         }
 
