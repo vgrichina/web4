@@ -173,7 +173,7 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
         if (bodyUrl) {
             // TODO: Add special handling for stuff like ipfs:
             const absoluteUrl = new URL(bodyUrl, ctx.origin).toString();
-            const res = await fetch(bodyUrl);
+            const res = await fetch(absoluteUrl);
             ctx.body = res.body;
             for (let [key, value] of res.headers.entries()) {
                 ctx.set(key, value);
