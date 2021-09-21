@@ -119,8 +119,7 @@ export function web4_get(request: Web4Request): Web4Response {
 
     // Demonstrate serving content from IPFS
     if (request.path == "/") {
-        // TODO: Use and support ipfs: protocol?
-        return bodyUrl('https://bafybeihymlthto6dy6x4qugdfptlt7saydb6uuouqbewdsuregfu77xliq.ipfs.infura-ipfs.io/')
+        return bodyUrl('ipfs://bafybeigyqse5wr6lua7i3zw32jgyri37rbbreebc4dyttcexcmxpj46oie/')
     }
 
     // By default return 404 Not Found

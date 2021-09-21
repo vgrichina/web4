@@ -10,6 +10,7 @@ const qs = require('querystring');
 const fetch = require('node-fetch');
 
 const MAX_PRELOAD_HOPS = 5;
+const IPFS_GATEWAY_DOMAIN = 'ipfs.infura-ipfs.io';
 
 async function withNear(ctx, next) {
     const config = require('./config')(process.env.NODE_ENV || 'development')
@@ -179,8 +180,12 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
         }
 
         if (bodyUrl) {
-            // TODO: Add special handling for stuff like ipfs:
-            const absoluteUrl = new URL(bodyUrl, ctx.origin).toString();
+            let absoluteUrl = new URL(bodyUrl, ctx.origin).toString();
+            if (absoluteUrl.startsWith('ipfs:')) {
+                const { hostname, pathname, search } = new URL(absoluteUrl);
+                absoluteUrl = `https://${hostname}.${IPFS_GATEWAY_DOMAIN}${pathname}${search}`;
+            }
+
             const res = await fetch(absoluteUrl);
             ctx.body = res.body;
             for (let [key, value] of res.headers.entries()) {
