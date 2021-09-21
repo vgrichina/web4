@@ -162,7 +162,15 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
     const account = await near.account(contractId);
     for (let i = 0; i < MAX_PRELOAD_HOPS; i++) {
         const res = await account.viewFunction(contractId, 'web4_get', methodParams);
-        const { contentType, body, bodyUrl, preloadUrls } = res;
+        const { contentType, status, body, bodyUrl, preloadUrls } = res;
+
+        if (status) {
+            ctx.status = status;
+            if (!body && !bodyUrl) {
+                ctx.body = ctx.message;
+                return;
+            }
+        }
 
         if (body) {
             ctx.type = contentType;

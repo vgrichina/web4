@@ -13,6 +13,7 @@ class Web4Request {
 @nearBindgen
 class Web4Response {
     contentType: string;
+    status: u32;
     body: Uint8Array;
     bodyUrl: string;
     preloadUrls: string[] = [];
@@ -88,6 +89,9 @@ function bodyUrl(url: string): Web4Response {
     return { bodyUrl: url };
 }
 
+function status(status: u32): Web4Response {
+    return { status };
+}
 export function web4_get(request: Web4Request): Web4Response {
     if (request.path == '/test') {
         // Render HTML with form to submit a message
@@ -119,6 +123,6 @@ export function web4_get(request: Web4Request): Web4Response {
         return bodyUrl('https://bafybeihymlthto6dy6x4qugdfptlt7saydb6uuouqbewdsuregfu77xliq.ipfs.infura-ipfs.io/')
     }
 
-    // By default just render current path to demonstrate dynamic content
-    return htmlResponse('Hello from <b>' + request.path + '</b>');
+    // By default return 404 Not Found
+    return status(404);
 }
