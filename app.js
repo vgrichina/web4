@@ -187,10 +187,13 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
             }
 
             const res = await fetch(absoluteUrl);
-            ctx.body = res.body;
+            if (!status) {
+                ctx.status = res.status;
+            }
             for (let [key, value] of res.headers.entries()) {
                 ctx.set(key, value);
             }
+            ctx.body = res.body;
             return;
         }
 
