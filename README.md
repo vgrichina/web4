@@ -39,8 +39,13 @@ export function web4_get(request: Web4Request): Web4Response {
         return htmlResponse('Hello to <b>' +  request.accountId! + '</b> from <code>' + request.path + '</code>');
     }
 
-    // By default just render current path to demonstrate dynamic content
-    return htmlResponse('Hello from <b>' + request.path + '</b>');
+    // Demonstrate serving content from IPFS
+    if (request.path == "/") {
+        return bodyUrl('ipfs://bafybeib72whzo2qiore4q6sumdteh6akewakrvukvqmx4n6kk7nwzinpaa/')
+    }
+
+    // By default return 404 Not Found
+    return status(404);
 }
 
 ```
@@ -66,7 +71,9 @@ class Web4Request {
 @nearBindgen
 class Web4Response {
     contentType: string;
+    status: u32;
     body: Uint8Array;
+    bodyUrl: string;
     preloadUrls: string[] = [];
 }
 ```
