@@ -147,10 +147,6 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
         near
     } = ctx;
 
-    if (ctx.host == 'near.page') {
-        ctx.redirect('https://web4.near.page');
-    }
-
     const contractId = ctx.host.endsWith('.near.page') ? ctx.host.replace(/.page$/, '') : process.env.CONTRACT_NAME;
 
     const parsedQuery = qs.parse(query);
