@@ -155,13 +155,12 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
         contractId = ctx.host.replace(/.page$/, '');
     }
 
-    const parsedQuery = qs.parse(query);
     const methodParams = {
         request: {
             accountId,
             path,
-            query: Object.keys(parsedQuery)
-                .map(key => ({ [key] : parsedQuery[key].length ? parsedQuery[key] : [parsedQuery[key]] }))
+            query: Object.keys(query)
+                .map(key => ({ [key] : Array.isArray(query[key]) ? query[key] : [query[key]] }))
                 .reduce((a, b) => ({...a, ...b}), {})
         }
     };
