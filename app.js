@@ -147,7 +147,13 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
         near
     } = ctx;
 
-    const contractId = ctx.host.endsWith('.near.page') ? ctx.host.replace(/.page$/, '') : process.env.CONTRACT_NAME;
+    let contractId = process.env.CONTRACT_NAME;
+    if (ctx.host.endsWith('.near.page')) {
+        contractId = ctx.host.replace(/.page$/, '');
+    }
+    if (ctx.host.endsWith('.testnet.page')) {
+        contractId = ctx.host.replace(/.page$/, '');
+    }
 
     const parsedQuery = qs.parse(query);
     const methodParams = {
