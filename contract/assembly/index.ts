@@ -119,7 +119,7 @@ export function web4_get(request: Web4Request): Web4Response {
 
     // Demonstrate serving content from IPFS
     if (request.path == "/") {
-        return bodyUrl('ipfs://bafybeib72whzo2qiore4q6sumdteh6akewakrvukvqmx4n6kk7nwzinpaa/')
+        return bodyUrl('ipfs://bafybeiczcmmagwt443rpp4na4zcz6ohsrly42fdptbwthxj4ta222spffu/')
     }
 
     // By default return 404 Not Found
