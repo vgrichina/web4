@@ -27,9 +27,8 @@ async function withNear(ctx, next) {
             case 'AccountDoesNotExist':
                 ctx.throw(404, e.message);
             case 'UntypedError':
-                ctx.throw(400, e.message);
             default:
-                throw e;
+                ctx.throw(400, e.message);
         }
     }
 }
