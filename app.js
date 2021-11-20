@@ -55,11 +55,31 @@ const router = new Router();
 
 const koaBody = require('koa-body')();
 
+const FAST_NEAR_URL = process.env.FAST_NEAR_URL;
+
+const callViewFunction = async ({ near }, contractId, methodName, methodParams) => {
+    if (FAST_NEAR_URL) {
+        const res = await fetch(`${FAST_NEAR_URL}/account/${contractId}/view/${methodName}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(methodParams)
+        });
+        if (!res.ok) {
+            throw new Error(await res.text());
+        }
+        return await res.json();
+    }
+
+    const account = await near.account(contractId);
+    return await account.viewFunction(contractId, methodName, methodParams);
+}
+
 router.get('/web4/contract/:contractId/:methodName', withNear, async ctx => {
     const {
         params: { contractId, methodName },
-        query,
-        near
+        query
     } = ctx;
 
     const methodParams = Object.keys(query)
@@ -68,9 +88,7 @@ router.get('/web4/contract/:contractId/:methodName', withNear, async ctx => {
             : { [key] : query[key] })
         .reduce((a, b) => ({...a, ...b}), {});
 
-    const account = await near.account(contractId);
-
-    ctx.body = await account.viewFunction(contractId, methodName, methodParams);
+    ctx.body = await callViewFunction(ctx, contractId, methodName, methodParams);
 });
 
 router.get('/web4/login', withNear, async ctx => {
@@ -142,8 +160,7 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
     const {
         accountId,
         path,
-        query,
-        near
+        query
     } = ctx;
 
     let contractId = process.env.CONTRACT_NAME;
@@ -164,9 +181,9 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
         }
     };
 
-    const account = await near.account(contractId);
     for (let i = 0; i < MAX_PRELOAD_HOPS; i++) {
-        const res = await account.viewFunction(contractId, 'web4_get', methodParams);
+        const res = await callViewFunction(ctx, contractId, 'web4_get', methodParams);
+
         const { contentType, status, body, bodyUrl, preloadUrls } = res;
 
         if (status) {
