@@ -22,7 +22,7 @@
     "koa": "^2.13.1",
     "koa-body": "^4.2.0",
     "koa-router": "^10.0.0",
-    "near-api-js": "^0.39.0",
+    "near-api-js": "^0.43.1",
     "node-fetch": "^2.6.1"
   },
   "devDependencies": {
