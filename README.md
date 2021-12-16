@@ -100,7 +100,10 @@ In future there is a plan to allow sending app-specific key as a cookie to sign 
 
 You can access your deployed smart contract on https://near.page. This is hosted web4 gateway provided to all `.near` accounts. For now it's free, but in future you might have to pay depending on how much traffic you get.
 
-Every contract gets corresponding domain, e.g. check out `https://web4.near.page` rendered by `web4.near` contract.
+Every contract gets corresponding domain, e.g. check out https://web4.near.page rendered by `web4.near` contract.
 
+# testnet.page
+
+This works same as `near.page` but for contracts deployed on testnet. Every `account.testnet` gets corresponding `account.testnet.page` domain.
 
 
