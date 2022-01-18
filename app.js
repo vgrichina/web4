@@ -95,7 +95,7 @@ router.get('/web4/login', withNear, async ctx => {
     // TODO: Generate private key, return in cookie?
 
     const walletConnection = new WalletConnection(ctx.near);
-    
+
     // TODO: Should allow passing callback URL?
     const loginCompleteUrl = `${ctx.origin}/web4/login/complete`;
     ctx.redirect(walletConnection.signInURL({
@@ -207,6 +207,7 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
                 absoluteUrl = `https://${hostname}.${IPFS_GATEWAY_DOMAIN}${pathname}${search}`;
             }
 
+            console.info('Loading', absoluteUrl);
             const res = await fetch(absoluteUrl);
             if (!status) {
                 ctx.status = res.status;
