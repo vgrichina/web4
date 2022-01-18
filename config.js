@@ -7,7 +7,7 @@ function getConfig(env) {
     case 'mainnet':
         return {
             networkId: 'mainnet',
-            nodeUrl: 'https://fastrpc.mainnet.near.org',
+            nodeUrl: 'https://rpc.mainnet.near.org',
             contractName: CONTRACT_NAME,
             walletUrl: 'https://wallet.near.org',
             helperUrl: 'https://helper.mainnet.near.org',
