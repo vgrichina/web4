@@ -215,6 +215,9 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
             for (let [key, value] of res.headers.entries()) {
                 ctx.set(key, value);
             }
+            if (contentType) {
+                ctx.type = contentType;
+            }
             ctx.body = res.body;
             return;
         }
