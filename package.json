@@ -1,5 +1,5 @@
 {
-  "name": "web4",
+  "name": "web4-near",
   "version": "0.0.1",
   "description": "Web3 using plain HTTP",
   "main": "app.js",
