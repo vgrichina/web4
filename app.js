@@ -255,6 +255,11 @@ app
     .use(router.routes())
     .use(router.allowedMethods());
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT);
-console.log('Listening on http://localhost:%d/', PORT);
+if (!module.parent) {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT);
+    console.log('Listening on http://localhost:%d/', PORT);
+} else {
+    module.exports = app;
+}
+
