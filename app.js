@@ -159,10 +159,10 @@ const ENABLE_CACHING = process.env.ENABLE_CACHING == 'yes';
 // TODO: Or is mapping enough?
 router.get('/(.*)', withNear, withAccountId, async ctx => {
     if (ENABLE_CACHING && await ctx.cashed()) {
-        console.log('cached', ctx.req.url);
         return;
+    } else {
+        console.log('cache miss', ctx.req.url);
     }
-
 
     const {
         accountId,
@@ -264,12 +264,11 @@ const cache = new LRU({ max: 500, ttl: 2000 });
 
 app
     .use(async (ctx, next) => {
-        console.log(ctx.method, ctx.path);
+        console.log(ctx.method, ctx.host, ctx.path);
         await next();
     })
     .use(koaCash({
         hash(ctx) {
-            console.log('host', ctx.request.host, 'url', ctx.request.url);
             return `${ctx.request.host}:${ctx.request.url}`;
         },
         get(key) {
