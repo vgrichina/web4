@@ -268,7 +268,11 @@ app
         await next();
     })
     .use(koaCash({
-        get: (key) => {
+        hash(ctx) {
+            console.log('host', ctx.request.host, 'url', ctx.request.url);
+            return `${ctx.request.host}:${ctx.request.url}`;
+        },
+        get(key) {
             return cache.get(key);
         },
         set(key, value) {
