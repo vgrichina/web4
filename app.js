@@ -152,11 +152,13 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAcc
     // TODO: Need to do something else than wallet redirect for CORS-enabled fetch
 });
 
+const ENABLE_CACHING = process.env.ENABLE_CACHING == 'yes';
+
 // TODO: Do contract method call according to mapping returned by web4_routes contract method
 // TODO: Use web4_get method in smart contract as catch all if no mapping?
 // TODO: Or is mapping enough?
 router.get('/(.*)', withNear, withAccountId, async ctx => {
-    if (await ctx.cashed()) {
+    if (ENABLE_CACHING && await ctx.cashed()) {
         console.log('cached', ctx.req.url);
         return;
     }
