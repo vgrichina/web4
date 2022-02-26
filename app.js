@@ -156,7 +156,12 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAcc
 // TODO: Use web4_get method in smart contract as catch all if no mapping?
 // TODO: Or is mapping enough?
 router.get('/(.*)', withNear, withAccountId, async ctx => {
-    // TODO: Allow returning different types of content, including references to external stuff like IPFS
+    if (await ctx.cashed()) {
+        console.log('cached', ctx.req.url);
+        return;
+    }
+
+
     const {
         accountId,
         path,
@@ -250,11 +255,24 @@ router.post('/(.*)', ctx => {
 
 // TODO: Need to query smart contract for rewrites config
 
+
+const LRU = require('lru-cache');
+const koaCash = require('koa-cash');
+const cache = new LRU({ max: 500, ttl: 1000 });
+
 app
     .use(async (ctx, next) => {
         console.log(ctx.method, ctx.path);
         await next();
     })
+    .use(koaCash({
+        get: (key) => {
+            return cache.get(key);
+        },
+        set(key, value) {
+            return cache.set(key, value);
+        },
+    }))
     .use(router.routes())
     .use(router.allowedMethods());
 
