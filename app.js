@@ -260,7 +260,7 @@ router.post('/(.*)', ctx => {
 
 const LRU = require('lru-cache');
 const koaCash = require('koa-cash');
-const cache = new LRU({ max: 500, ttl: 1000 });
+const cache = new LRU({ max: 500, ttl: 2000 });
 
 app
     .use(async (ctx, next) => {
