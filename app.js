@@ -154,16 +154,30 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAcc
 
 const ENABLE_CACHING = process.env.ENABLE_CACHING == 'yes';
 
+const requestPromises = {};
+const withCaching = async (ctx, next) => {
+    if (ENABLE_CACHING) {
+        if (await ctx.cashed()) return;
+        console.log('cache miss', ctx.request.host, ctx.request.url);
+    }
+
+    const requestKey = `${ctx.request.host}:${ctx.request.url}`;
+    const promise = requestPromises[requestKey];
+
+    if (promise) {
+        console.log('coalesce', ctx.request.host, ctx.request.url);
+        await promise;
+        delete requestPromises[requestKey];
+        if (await ctx.cashed()) return;
+    }
+
+    await (requestPromises[requestKey] = next());
+}
+
 // TODO: Do contract method call according to mapping returned by web4_routes contract method
 // TODO: Use web4_get method in smart contract as catch all if no mapping?
 // TODO: Or is mapping enough?
-router.get('/(.*)', withNear, withAccountId, async ctx => {
-    if (ENABLE_CACHING && await ctx.cashed()) {
-        return;
-    } else {
-        console.log('cache miss', ctx.req.url);
-    }
-
+router.get('/(.*)', withCaching, withNear, withAccountId, async ctx => {
     const {
         accountId,
         path,
