@@ -162,16 +162,16 @@ const withCaching = async (ctx, next) => {
     }
 
     const requestKey = `${ctx.request.host}:${ctx.request.url}`;
-    const promise = requestPromises[requestKey];
-
-    if (promise) {
+    let promise = requestPromises[requestKey];
+    if (!promise) {
+        // TODO: Time out?
+        promise = requestPromises[requestKey] = next();
+    } else {
         console.log('coalesce', ctx.request.host, ctx.request.url);
-        await promise;
-        delete requestPromises[requestKey];
-        if (await ctx.cashed()) return;
     }
-
-    await (requestPromises[requestKey] = next());
+    await promise;
+    delete requestPromises[requestKey];
+    if (await ctx.cashed()) return;
 }
 
 // TODO: Do contract method call according to mapping returned by web4_routes contract method
