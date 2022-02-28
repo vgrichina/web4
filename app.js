@@ -161,6 +161,7 @@ const withCaching = async (ctx, next) => {
         console.log('cache miss', ctx.request.host, ctx.request.url);
     }
 
+    // TODO: If logged in – used current account as part of cache key
     const requestKey = `${ctx.request.host}:${ctx.request.url}`;
     let promise = requestPromises[requestKey];
     if (!promise) {
@@ -203,7 +204,15 @@ router.get('/(.*)', withCaching, withNear, withAccountId, async ctx => {
     };
 
     for (let i = 0; i < MAX_PRELOAD_HOPS; i++) {
-        const res = await callViewFunction(ctx, contractId, 'web4_get', methodParams);
+        let res;
+        try {
+            res = await callViewFunction(ctx, contractId, 'web4_get', methodParams);
+        } catch (e) {
+            if (e.toString().includes('block height')) {
+                console.error('error', e);
+            }
+            throw e;
+        }
 
         const { contentType, status, body, bodyUrl, preloadUrls } = res;
 
