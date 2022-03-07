@@ -6,6 +6,10 @@ const {
     transactions: { functionCall },
 } = require('near-api-js');
 
+const STATSD_HOST = process.env.STATSD_HOST || undefined;
+const StatsD = require('node-statsd');
+const statsd = new StatsD({ host: STATSD_HOST, mock: !STATSD_HOST });
+
 const qs = require('querystring');
 const fetch = require('node-fetch');
 
@@ -58,6 +62,7 @@ const koaBody = require('koa-body')();
 const FAST_NEAR_URL = process.env.FAST_NEAR_URL;
 
 const callViewFunction = async ({ near }, contractId, methodName, methodParams) => {
+    statsd.increment('call-view-function');
     if (FAST_NEAR_URL) {
         const res = await fetch(`${FAST_NEAR_URL}/account/${contractId}/view/${methodName}`, {
             method: 'POST',
@@ -157,8 +162,12 @@ const ENABLE_CACHING = process.env.ENABLE_CACHING == 'yes';
 const requestPromises = {};
 const withCaching = async (ctx, next) => {
     if (ENABLE_CACHING) {
-        if (await ctx.cashed()) return;
+        if (await ctx.cashed()) {
+            statsd.increment('cache-hit');
+            return;
+        }
         console.log('cache miss', ctx.request.host, ctx.request.url);
+        statsd.increment('cache-miss');
     }
 
     // TODO: If logged in – used current account as part of cache key
@@ -168,6 +177,7 @@ const withCaching = async (ctx, next) => {
         // TODO: Time out?
         promise = requestPromises[requestKey] = next();
     } else {
+        statsd.increment('coalesce');
         console.log('coalesce', ctx.request.host, ctx.request.url);
     }
     await promise;
@@ -179,6 +189,8 @@ const withCaching = async (ctx, next) => {
 // TODO: Use web4_get method in smart contract as catch all if no mapping?
 // TODO: Or is mapping enough?
 router.get('/(.*)', withCaching, withNear, withAccountId, async ctx => {
+    statsd.increment('web4-get');
+
     const {
         accountId,
         path,
@@ -192,6 +204,8 @@ router.get('/(.*)', withCaching, withNear, withAccountId, async ctx => {
     if (ctx.host.endsWith('.testnet.page')) {
         contractId = ctx.host.replace(/.page$/, '');
     }
+
+    statsd.increment(`web4-get:${ctx.host}`);
 
     const methodParams = {
         request: {
@@ -238,6 +252,7 @@ router.get('/(.*)', withCaching, withNear, withAccountId, async ctx => {
             }
 
             console.info('Loading', absoluteUrl);
+            statsd.increment('web4-fetch');
             const res = await fetch(absoluteUrl);
             if (!status) {
                 ctx.status = res.status;
