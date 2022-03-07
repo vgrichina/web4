@@ -25,8 +25,7 @@
     "koa-router": "^10.0.0",
     "lru-cache": "^7.4.0",
     "near-api-js": "^0.43.1",
-    "node-fetch": "^2.6.1",
-    "node-statsd": "^0.1.1"
+    "node-fetch": "^2.6.1"
   },
   "devDependencies": {
     "env-cmd": "^10.1.0",
