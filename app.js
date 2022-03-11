@@ -170,8 +170,13 @@ const withCaching = async (ctx, next) => {
     } else {
         console.log('coalesce', ctx.request.host, ctx.request.url);
     }
-    await promise;
-    delete requestPromises[requestKey];
+
+    try {
+        await promise;
+    } finally {
+        delete requestPromises[requestKey];
+    }
+
     if (await ctx.cashed()) return;
 }
 
