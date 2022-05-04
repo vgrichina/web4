@@ -243,7 +243,7 @@ router.get('/(.*)', withCaching, withNear, withAccountId, async ctx => {
             }
 
             console.info('Loading', absoluteUrl);
-            const res = await fetch(absoluteUrl);
+            const res = await fetch(absoluteUrl, { method: 'GET', headers: {"Accept-Encoding": "identity"}});
             if (!status) {
                 ctx.status = res.status;
             }
@@ -260,7 +260,7 @@ router.get('/(.*)', withCaching, withNear, withAccountId, async ctx => {
         if (preloadUrls) {
             const preloads = await Promise.all(preloadUrls.map(async url => {
                 const absoluteUrl = new URL(url, ctx.origin).toString();
-                const res = await fetch(absoluteUrl);
+                const res = await fetch(absoluteUrl, { method: 'GET', headers: {"Accept-Encoding": "identity"}});
                 return [url, {
                     contentType: res.headers.get('content-type'),
                     body: (await res.buffer()).toString('base64')
