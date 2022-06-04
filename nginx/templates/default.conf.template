@@ -13,6 +13,7 @@ server {
         # TODO: Cache POST requests for fast-near pass through?
         # proxy_cache_methods POST;
         # proxy_cache_key "$request_uri|$request_body";
+        proxy_cache_key "$host|$request_uri"
         proxy_buffers 8 32k;
         proxy_buffer_size 64k;
         proxy_cache_valid 1s;
