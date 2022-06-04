@@ -1,4 +1,4 @@
-proxy_cache_path /var/www/nginx-cache levels=1:2 keys_zone=small:1m inactive=1m;
+proxy_cache_path /var/nginx-cache levels=1:2 keys_zone=small:1m inactive=1m;
 
 server {
 
