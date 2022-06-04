@@ -1,6 +1,6 @@
 FROM node:16
 
-RUN sudo apt install nginx
+RUN apt install nginx
 
 EXPOSE 80
 
