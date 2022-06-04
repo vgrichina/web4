@@ -152,41 +152,10 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAcc
     // TODO: Need to do something else than wallet redirect for CORS-enabled fetch
 });
 
-const ENABLE_CACHING = process.env.ENABLE_CACHING == 'yes';
-
-const requestPromises = {};
-const withCaching = async (ctx, next) => {
-    if (ENABLE_CACHING) {
-        if (await ctx.cashed()) return;
-        console.log('cache miss', ctx.request.host, ctx.request.url);
-    }
-
-    // TODO: If logged in – used current account as part of cache key
-    const requestKey = `${ctx.request.host}:${ctx.request.url}`;
-    let promise = requestPromises[requestKey];
-    if (!promise) {
-        // TODO: Time out?
-        promise = requestPromises[requestKey] = next();
-    } else {
-        console.log('coalesce', ctx.request.host, ctx.request.url);
-    }
-
-    try {
-        await promise;
-    } finally {
-        delete requestPromises[requestKey];
-    }
-
-    if (await ctx.cashed()) return;
-}
-
-// NOTE: This is needed to avoid "Place koa-cache below any compression middleware." error
-const fetchUncompressed = (url) => fetch(url, { method: 'GET', headers: { "Accept-Encoding": "identity" } });
-
 // TODO: Do contract method call according to mapping returned by web4_routes contract method
 // TODO: Use web4_get method in smart contract as catch all if no mapping?
 // TODO: Or is mapping enough?
-router.get('/(.*)', withCaching, withNear, withAccountId, async ctx => {
+router.get('/(.*)', withNear, withAccountId, async ctx => {
     const {
         accountId,
         path,
@@ -246,7 +215,7 @@ router.get('/(.*)', withCaching, withNear, withAccountId, async ctx => {
             }
 
             console.info('Loading', absoluteUrl);
-            const res = await fetchUncompressed(absoluteUrl);
+            const res = await fetch(absoluteUrl);
             if (!status) {
                 ctx.status = res.status;
             }
@@ -263,7 +232,7 @@ router.get('/(.*)', withCaching, withNear, withAccountId, async ctx => {
         if (preloadUrls) {
             const preloads = await Promise.all(preloadUrls.map(async url => {
                 const absoluteUrl = new URL(url, ctx.origin).toString();
-                const res = await fetchUncompressed(absoluteUrl);
+                const res = await fetch(absoluteUrl);
                 return [url, {
                     contentType: res.headers.get('content-type'),
                     body: (await res.buffer()).toString('base64')
@@ -288,27 +257,11 @@ router.post('/(.*)', ctx => {
 
 // TODO: Need to query smart contract for rewrites config
 
-
-const LRU = require('lru-cache');
-const koaCash = require('koa-cash');
-const cache = new LRU({ max: 500, ttl: 2000 });
-
 app
     .use(async (ctx, next) => {
         console.log(ctx.method, ctx.host, ctx.path);
         await next();
     })
-    .use(koaCash({
-        hash(ctx) {
-            return `${ctx.request.host}:${ctx.request.url}`;
-        },
-        get(key) {
-            return cache.get(key);
-        },
-        set(key, value) {
-            return cache.set(key, value);
-        },
-    }))
     .use(router.routes())
     .use(router.allowedMethods());
 
