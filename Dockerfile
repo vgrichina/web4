@@ -10,4 +10,4 @@ RUN yarn
 
 EXPOSE 80
 
-CMD [ "yarn", "start" ]
+CMD [ "node", "app" ]
