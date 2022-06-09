@@ -107,3 +107,38 @@ Every contract gets corresponding domain, e.g. check out https://web4.near.page 
 This works same as `near.page` but for contracts deployed on testnet. Every `account.testnet` gets corresponding `account.testnet.page` domain.
 
 
+# Roadmap
+
+
+- Serve websites
+    - [x] Serve arbitrary GET requests
+    - [ ] Serve arbitrary POST requests
+    - [x] Load content from HTTP URLs
+    - [x] Load content from IPFS URLs
+    - [ ] Load content from ArWeave URLs
+    - [ ] Route configuration for better caching, etc
+- Access NEAR
+    - [x] Access view calls via GET requests
+    - [ ] Access view calls via POST requests
+    - [x] Post transactions with POST through wallet redirect
+    - [ ] Polish login and transaction flow with wallet
+- Decentralization
+    - [x] Standalone server to run
+    - [ ] .near domain support through hosts file, local certificate authority, etc
+- Prepare for wider use
+    - [ ] Tests
+    - [ ] Documentation
+    - [ ] Landing page
+    - [ ] Examples on different languages
+    - [ ] More efficient binary-based API
+- Future direction
+    - [ ] Upload to IPFS and pin
+    - [ ] Upload to ArWeave
+    - [ ] Pubsub protocol
+    - [ ] Direct messages protocol
+    - [ ] Indexer API
+    - [ ] Private storage
+    - [ ] Private messages
+    - [ ] Voice API
+    - [ ] web4 wallet
+    - [ ] App launcher for wallet (pre-selecting necessary account in app)
