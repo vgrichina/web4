@@ -126,14 +126,19 @@ This works same as `near.page` but for contracts deployed on testnet. Every `acc
     - [x] Standalone server to run
     - [ ] .near domain support through hosts file, local certificate authority, etc
 - Prepare for wider use
+    - [ ] Publish standalone package runnable with `npx`
     - [ ] Tests
     - [ ] Documentation
     - [ ] Landing page
     - [ ] Examples on different languages
     - [ ] More efficient binary-based API
+    - [ ] Custom domain support
+    - [ ] Abuse report system (token curated registry or smth like that)
+    - [ ] Billing
 - Future direction
     - [ ] Upload to IPFS and pin
     - [ ] Upload to ArWeave
+    - [ ] Built-in per user statsd, including over http
     - [ ] Pubsub protocol
     - [ ] Direct messages protocol
     - [ ] Indexer API
