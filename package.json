@@ -2,6 +2,9 @@
   "name": "web4-near",
   "version": "0.0.1",
   "description": "Web3 using plain HTTP",
+  "bin": {
+      "web4": "bin/web4"
+  },
   "main": "app.js",
   "license": "MIT",
   "scripts": {
@@ -14,7 +17,7 @@
     "deploy:website": "npm run build:website && ipfs-deploy dist/",
     "deploy": "npm run build:contract && npm run deploy:contract",
     "prestart": "npm run build:contract:debug && npm run dev:deploy:contract",
-    "start": "env-cmd -f ./neardev/dev-account.env nodemon app --watch . -e js",
+    "start": "env-cmd -f ./neardev/dev-account.env nodemon bin/web4 --watch . -e js",
     "dev": "nodemon --watch contract -e ts --exec \"npm run start\"",
     "test": "npm run build:contract:debug && node contract/test && jest test --runInBand"
   },
