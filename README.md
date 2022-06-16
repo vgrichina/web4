@@ -10,7 +10,7 @@ static resources and blockchain logic.
 There is an HTTP gateway to NEAR blockchain which allows smart contract to handle arbitrary GET requests.
 Every smart contract on NEAR also gets corresponding API endpoint which can be accessed through regular HTTP requests.
 
-## Example contract
+## Example contract (in AssemblyScript)
 
 ```ts
 export function web4_get(request: Web4Request): Web4Response {
@@ -95,6 +95,10 @@ E.g contract above preloads has form that gets posted to `/web4/contract/guest-b
 Note that both JSON and form data are supported. When transaction is processed by server user gets redirected to wallet for signing this transaction.
 
 In future there is a plan to allow sending app-specific key as a cookie to sign limited subset of transactions without confirmation in wallet.
+
+## Rust support
+
+Check out [sample web4 project made with Rust](https://github.com/frol/near-web4-demo).
 
 # near.page
 
