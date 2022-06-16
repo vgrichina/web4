@@ -92,6 +92,21 @@ function bodyUrl(url: string): Web4Response {
 function status(status: u32): Web4Response {
     return { status };
 }
+
+function assertOwner(): void {
+    // NOTE: Can change this check to alow different owners
+    assert(context.sender == context.contractName);
+}
+
+const WEB4_STATIC_URL_KEY = 'web4:staticUrl';
+
+// Updates current static content URL in smart contract storage
+export function web4_setStaticUrl(url: string): void {
+    assertOwner();
+
+    storage.set(WEB4_STATIC_URL_KEY, url);
+}
+
 export function web4_get(request: Web4Request): Web4Response {
     if (request.path == '/test') {
         // Render HTML with form to submit a message
@@ -119,7 +134,7 @@ export function web4_get(request: Web4Request): Web4Response {
 
     // Demonstrate serving content from IPFS
     if (request.path == "/") {
-        return bodyUrl('ipfs://bafybeiczcmmagwt443rpp4na4zcz6ohsrly42fdptbwthxj4ta222spffu/')
+        return bodyUrl(`${storage.getString(WEB4_STATIC_URL_KEY)!}${request.path}`);
     }
 
     // By default return 404 Not Found
