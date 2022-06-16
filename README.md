@@ -140,7 +140,7 @@ This works same as `near.page` but for contracts deployed on testnet. Every `acc
     - [ ] Abuse report system (token curated registry or smth like that)
     - [ ] Billing
 - Future direction
-    - [ ] Upload to IPFS and pin
+    - [x] Upload to IPFS and pin (see [web4-deploy](https://github.com/vgrichina/web4-deploy))
     - [ ] Upload to ArWeave
     - [ ] Built-in per user statsd, including over http
     - [ ] Pubsub protocol
