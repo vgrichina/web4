@@ -110,9 +110,17 @@ Every contract gets corresponding domain, e.g. check out https://web4.near.page 
 
 This works same as `near.page` but for contracts deployed on testnet. Every `account.testnet` gets corresponding `account.testnet.page` domain.
 
+# Priorities
+
+This project aims to make trade offs based on these priorities:
+
+- Performance
+- Ease of deployment at scale
+- Hackability
+- Correctness
+- Completeness 
 
 # Roadmap
-
 
 - Serve websites
     - [x] Serve arbitrary GET requests
