@@ -8,8 +8,8 @@ static resources and blockchain logic.
 ## TL;DR
 
 * Manage website frontend in smart contract
-* Every `.near` account receives a subdomain under [near.page](near.page).
-    * E.g. `thewiki.near` serves `https:/thewiki.near.page`
+* Every `.near` account receives a subdomain under [https://near.page](https://near.page).
+    * E.g. `thewiki.near` serves [https://thewiki.near.page](https://thewiki.near.page).
 
 ## How it works?
 
