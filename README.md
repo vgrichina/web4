@@ -5,6 +5,12 @@ Web4 is a new way to distribute decentralized apps.
 You only need to deploy one smart contract using WebAssembly to host your app HTTP backend,
 static resources and blockchain logic.
 
+## TL;DR
+
+* Manage website frontend in smart contract
+* Every `.near` account receives a subdomain under [near.page](near.page).
+    * E.g. `thewiki.near` serves `https:/thewiki.near.page`
+
 ## How it works?
 
 There is an HTTP gateway to NEAR blockchain which allows smart contract to handle arbitrary GET requests.
@@ -118,7 +124,7 @@ This project aims to make trade offs based on these priorities:
 - Ease of deployment at scale
 - Hackability
 - Correctness
-- Completeness 
+- Completeness
 
 # Roadmap
 
