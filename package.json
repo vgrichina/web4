@@ -1,9 +1,9 @@
 {
   "name": "web4-near",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Web3 using plain HTTP",
   "bin": {
-      "web4": "bin/web4"
+    "web4": "bin/web4"
   },
   "main": "app.js",
   "license": "MIT",
