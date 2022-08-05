@@ -124,11 +124,7 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAcc
     // TODO: Sign transaction with private key and account from cookies
     // TODO: Accept both json and form submission
 
-    const accountId = ctx.cookies.get('web4_account_id');
-    if (!accountId) {
-        ctx.redirect('/web4/login');
-        return;
-    }
+    const accountId = ctx.accountId;
 
     const allKeys = (ctx.cookies.get('web4_all_keys') || '').split(',');
 
