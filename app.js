@@ -10,7 +10,7 @@ const qs = require('querystring');
 const fetch = require('node-fetch');
 
 const MAX_PRELOAD_HOPS = 5;
-const IPFS_GATEWAY_DOMAIN = process.env.IPFS_GATEWAY_DOMAIN || 'cloudflare-ipfs.com';
+const IPFS_GATEWAY_DOMAIN = process.env.IPFS_GATEWAY_DOMAIN || 'dweb.link';
 
 async function withNear(ctx, next) {
     const config = require('./config')(process.env.NODE_ENV || 'development')
@@ -221,7 +221,7 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
             let absoluteUrl = new URL(bodyUrl, ctx.origin).toString();
             if (absoluteUrl.startsWith('ipfs:')) {
                 const { hostname, pathname, search } = new URL(absoluteUrl);
-                absoluteUrl = `https://${hostname}.${IPFS_GATEWAY_DOMAIN}${pathname}${search}`;
+                absoluteUrl = `https://${hostname}.ipfs.${IPFS_GATEWAY_DOMAIN}${pathname}${search}`;
             }
 
             console.info('Loading', absoluteUrl);
