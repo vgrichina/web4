@@ -230,6 +230,11 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
                 ctx.status = res.status;
             }
             for (let [key, value] of res.headers.entries()) {
+                if (key == 'content-encoding') {
+                    // NOTE: fetch returns Gunzip stream, so response doesn't get compressed
+                    // TODO: Figure out how to relay compressed stream instead
+                    continue;
+                }
                 ctx.set(key, value);
             }
             if (contentType) {
