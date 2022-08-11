@@ -194,11 +194,11 @@ async function withContractId(ctx, next) {
 // TODO: Or is mapping enough?
 router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
     const {
-        contractId,
         accountId,
         path,
         query
     } = ctx;
+    let { contractId } = ctx;
 
     const methodParams = {
         request: {
