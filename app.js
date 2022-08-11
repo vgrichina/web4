@@ -1,19 +1,21 @@
 const {
     connect,
     keyStores: { InMemoryKeyStore },
-    WalletConnection,
-    ConnectedWalletAccount,
-    transactions: { functionCall },
+    transactions: { Transaction, functionCall },
+    KeyPair,
 } = require('near-api-js');
+const { PublicKey } = require('near-api-js/lib/utils');
+const { signInURL, signTransactionsURL } = require('./util/web-wallet-api');
 
-const qs = require('querystring');
 const fetch = require('node-fetch');
+const qs = require('querystring');
 
 const MAX_PRELOAD_HOPS = 5;
 const IPFS_GATEWAY_DOMAIN = process.env.IPFS_GATEWAY_DOMAIN || 'c4rex.co';
 
+const config = require('./config')(process.env.NODE_ENV || 'development')
+
 async function withNear(ctx, next) {
-    const config = require('./config')(process.env.NODE_ENV || 'development')
     // TODO: Why no default keyStore?
     const keyStore = new InMemoryKeyStore();
     const near = await connect({...config, keyStore});
@@ -91,21 +93,25 @@ router.get('/web4/contract/:contractId/:methodName', withNear, async ctx => {
     ctx.body = await callViewFunction(ctx, contractId, methodName, methodParams);
 });
 
-router.get('/web4/login', withNear, async ctx => {
+router.get('/web4/login', withNear, withContractId, async ctx => {
     // TODO: Generate private key, return in cookie?
 
-    const walletConnection = new WalletConnection(ctx.near);
+    let {
+        contractId,
+        query: { callback_url }
+    } = ctx;
 
-    // TODO: Should allow passing callback URL?
-    const loginCompleteUrl = `${ctx.origin}/web4/login/complete`;
-    ctx.redirect(walletConnection.signInURL({
+    const loginCompleteUrl = `${ctx.origin}/web4/login/complete?${qs.stringify({ callback_url })}`;
+    ctx.redirect(signInURL({
+        walletUrl: config.walletUrl,
+        contractId,
         successUrl: loginCompleteUrl,
         failureUrl: loginCompleteUrl
-    }))
+    }));
 });
 
 router.get('/web4/login/complete', async ctx => {
-    const { account_id, all_keys } = ctx.query;
+    const { account_id, all_keys, callback_url } = ctx.query;
     if (account_id) {
         ctx.cookies.set('web4_account_id', account_id);
         ctx.cookies.set('web4_all_keys', all_keys);
@@ -113,10 +119,24 @@ router.get('/web4/login/complete', async ctx => {
     } else {
         ctx.body = `Couldn't login`;
     }
+
+    // TODO: Require callback URL? Is referrer useful?
+    if (callback_url) {
+        ctx.redirect(callback_url);
+    }
 });
 
-router.post('/web4/logout');
-// TODO: Remove private key cookie (ideally also somehow remove key from account?)
+router.get('/web4/logout', async ctx => {
+    let {
+        query: { callback_url }
+    } = ctx;
+    // TODO: Validate callback_url / have default?
+
+    ctx.cookies.set('web4_account_id');
+    // TODO: Remove private key cookie (ideally also somehow remove key from account?)
+
+    ctx.redirect(callback_url);
+});
 
 const DEFAULT_GAS = '300' + '000000000000';
 
@@ -130,34 +150,33 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAcc
 
     const { contractId, methodName } = ctx.params;
     const { body } = ctx.request;
-    const { web4_gas: gas, web4_deposit: deposit } = body;
+    const { web4_gas: gas, web4_deposit: deposit, web4_callback_url: callbackUrl } = body;
     const args = Object.keys(body)
         .filter(key => !key.startsWith('web4_'))
         .map(key => ({ [key]: body[key] }))
         .reduce((a, b) => ({...a, ...b}), {});
 
-    // TODO: Test this
-    const walletConnection = new WalletConnection(ctx.near, 'web4', { allKeys });
-    const account = new ConnectedWalletAccount(walletConnection, ctx.near.connection, accountId);
-    // TODO: walletConnection.account();
-    const transaction = await account.createTransaction(contractId, [
-        functionCall(methodName, args, gas || DEFAULT_GAS, deposit || '0')
-    ]);
-    const url = walletConnection.signTransactionsURL([transaction], ctx.origin)
+    // NOTE: publicKey, nonce, blockHash keys are faked as reconstructed by wallet
+    const transaction = new Transaction({
+        signerId: accountId,
+        publicKey: new PublicKey({ type: 0, data: Buffer.from(new Array(32))}),
+        nonce: 0,
+        receiverId: contractId,
+        actions: [
+            functionCall(methodName, args, gas || DEFAULT_GAS, deposit || '0')
+        ],
+        blockHash: Buffer.from(new Array(32))
+    });
+    const url = signTransactionsURL({
+        walletUrl: config.walletUrl,
+        transactions: [transaction],
+        callbackUrl: new URL(callbackUrl || '/', ctx.origin).toString()
+    });
     ctx.redirect(url);
     // TODO: Need to do something else than wallet redirect for CORS-enabled fetch
 });
 
-// TODO: Do contract method call according to mapping returned by web4_routes contract method
-// TODO: Use web4_get method in smart contract as catch all if no mapping?
-// TODO: Or is mapping enough?
-router.get('/(.*)', withNear, withAccountId, async ctx => {
-    const {
-        accountId,
-        path,
-        query
-    } = ctx;
-
+async function withContractId(ctx, next) {
     let contractId = process.env.CONTRACT_NAME;
     if (ctx.host.endsWith('.near.page')) {
         contractId = ctx.host.replace(/.page$/, '');
@@ -165,6 +184,21 @@ router.get('/(.*)', withNear, withAccountId, async ctx => {
     if (ctx.host.endsWith('.testnet.page')) {
         contractId = ctx.host.replace(/.page$/, '');
     }
+    ctx.contractId = contractId;
+
+    return await next();
+}
+
+// TODO: Do contract method call according to mapping returned by web4_routes contract method
+// TODO: Use web4_get method in smart contract as catch all if no mapping?
+// TODO: Or is mapping enough?
+router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
+    const {
+        contractId,
+        accountId,
+        path,
+        query
+    } = ctx;
 
     const methodParams = {
         request: {

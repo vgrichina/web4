@@ -19,6 +19,8 @@ class Web4Response {
     preloadUrls: string[] = [];
 }
 
+// TODO: Quote attributes
+
 class HtmlAttributes {
     id: string | null;
     name: string | null;
@@ -54,11 +56,11 @@ class HtmlFormAttributes extends HtmlAttributes {
     toString(): string {
         let result = super.toString();
         if (this.action) {
-            result += "action=";
+            result += " action=";
             result += this.action!;
         }
         if (this.method) {
-            result += "method=";
+            result += " method=";
             result += this.method;
         }
         return result;
@@ -109,11 +111,19 @@ export function web4_setStaticUrl(url: string): void {
 
 export function web4_get(request: Web4Request): Web4Response {
     if (request.path == '/test') {
-        // Render HTML with form to submit a message
-        return htmlResponse(form({ action: "/web4/contract/guest-book.testnet/addMessage" }, [
-            textarea({ name: "text" }),
-            button({ name: "submit" }, ["Post"])
-        ]));
+        if (request.accountId) {
+            // Render HTML with form to submit a message
+            return htmlResponse(form({ action: "/web4/contract/guest-book.testnet/addMessage" }, [
+                `<input type="hidden" name="web4_callback_url" value="${request.path}">`,
+                textarea({ name: "text" }),
+                button({ name: "submit" }, ["Post"])
+            ]));
+        } else {
+            // User needs to login
+            return htmlResponse(`
+                Please <a href="/web4/login?callback_url=${request.path}">login</a> to post messages.
+            `);
+        }
     }
 
     if (request.path == '/messages') {
@@ -129,7 +139,10 @@ export function web4_get(request: Web4Request): Web4Response {
 
     if (request.accountId) {
         // User is logged in, we can welcome them
-        return htmlResponse('Hello to <b>' +  request.accountId! + '</b> from <code>' + request.path + '</code>');
+        return htmlResponse(`
+            Hello to <b>${request.accountId!}</b> from <code>${request.path}</code>.
+            <a href="/web4/logout?callback_url=${request.path}">Logout</a>.
+        `);
     }
 
     // Demonstrate serving content from IPFS
