@@ -10,7 +10,7 @@ const qs = require('querystring');
 const fetch = require('node-fetch');
 
 const MAX_PRELOAD_HOPS = 5;
-const IPFS_GATEWAY_DOMAIN = process.env.IPFS_GATEWAY_DOMAIN || 'dweb.link';
+const IPFS_GATEWAY_DOMAIN = process.env.IPFS_GATEWAY_DOMAIN || 'c4rex.co';
 
 async function withNear(ctx, next) {
     const config = require('./config')(process.env.NODE_ENV || 'development')
