@@ -1,3 +1,4 @@
 node_modules
 neardev
 dist
+.DS_Store
