@@ -262,10 +262,13 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
             const res = await fetch(absoluteUrl);
             if (!status) {
                 ctx.status = res.status;
-            }
+            }   
+            
+            
+            const needToUncompress = !!res.headers.get('content-encoding');
             for (let [key, value] of res.headers.entries()) {
-                if (key == 'content-encoding') {
-                    // NOTE: fetch returns Gunzip stream, so response doesn't get compressed
+                if (needToUncompress && ['content-encoding', 'content-length'].includes(key)) {
+                    // NOTE: fetch returns Gunzip stream, so response doesn't get compressed + content length is off
                     // TODO: Figure out how to relay compressed stream instead
                     continue;
                 }
