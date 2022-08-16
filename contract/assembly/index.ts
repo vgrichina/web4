@@ -146,7 +146,7 @@ export function web4_get(request: Web4Request): Web4Response {
     }
 
     // Demonstrate serving content from IPFS
-    if (request.path == "/") {
+    if (request.path == "/" || request.path.endsWith('.css')) {
         return bodyUrl(`${storage.getString(WEB4_STATIC_URL_KEY)!}${request.path}`);
     }
 
