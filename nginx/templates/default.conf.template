@@ -1,5 +1,19 @@
 proxy_cache_path /var/nginx-cache levels=1:2 keys_zone=small:1m inactive=1m;
 
+upstream web4 {
+    server ${NGINX_UPSTREAM_HOST}:${NGINX_UPSTREAM_PORT};
+
+    keepalive 16;
+}
+
+upstream ipfs {
+    # TODO: Add more upstreams and solid failover strategy
+
+    server c4rex.co;
+
+    keepalive 16;
+}
+
 server {
     listen 80 default_server;
 
@@ -8,7 +22,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_pass http://${NGINX_UPSTREAM_HOST}:${NGINX_UPSTREAM_PORT};
+        proxy_pass http://web4;
 
         proxy_cache small;
         # TODO: Cache POST requests for fast-near pass through?
@@ -29,11 +43,13 @@ server {
 
     location /ipfs {
         # TODO: Set expires based on content type like https://gist.github.com/bkawk/1d7ecc97e3be3cd04e8e173483d82e1a?
+        proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_pass https://c4rex.co;
+        proxy_set_header Connection "";
+        proxy_pass https://ipfs;
 
         proxy_cache small;
         proxy_cache_key "$host|$request_uri";
