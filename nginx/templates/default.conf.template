@@ -9,7 +9,7 @@ upstream web4 {
 upstream ipfs {
     # TODO: Add more upstreams and solid failover strategy
 
-    server c4rex.co;
+    server c4rex.co:443;
 
     keepalive 16;
 }
