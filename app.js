@@ -11,7 +11,7 @@ const fetch = require('node-fetch');
 const qs = require('querystring');
 
 const MAX_PRELOAD_HOPS = 5;
-const IPFS_GATEWAY_DOMAIN = process.env.IPFS_GATEWAY_DOMAIN || 'c4rex.co';
+const IPFS_GATEWAY_URL = process.env.IPFS_GATEWAY_URL || 'https://ipfs.web4.near.page';
 
 const config = require('./config')(process.env.NODE_ENV || 'development')
 
@@ -255,7 +255,7 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
             let absoluteUrl = new URL(bodyUrl, ctx.origin).toString();
             if (absoluteUrl.startsWith('ipfs:')) {
                 const { hostname, pathname, search } = new URL(absoluteUrl);
-                absoluteUrl = `https://${hostname}.ipfs.${IPFS_GATEWAY_DOMAIN}${pathname}${search}`;
+                absoluteUrl = `${IPFS_GATEWAY_URL}/ipfs/${hostname}${pathname}${search}`;
             }
 
             console.info('Loading', absoluteUrl);
