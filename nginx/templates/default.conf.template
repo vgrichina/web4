@@ -1,6 +1,7 @@
 proxy_cache_path /var/nginx-cache levels=1:2 keys_zone=small:1m inactive=1m;
 
 server {
+    listen 80 default_server;
 
     location / {
         proxy_set_header Host $host;
@@ -18,6 +19,28 @@ server {
         proxy_buffer_size 64k;
         proxy_cache_valid 2s;
         proxy_cache_use_stale updating;
+        add_header X-Cached $upstream_cache_status;
+    }
+}
+
+server {
+    listen 80;
+    server_name ipfs.web4.near.page;
+
+    location /ipfs {
+        # TODO: Set expires based on content type like https://gist.github.com/bkawk/1d7ecc97e3be3cd04e8e173483d82e1a?
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_pass https://c4rex.co;
+
+        proxy_cache small;
+        proxy_cache_key "$host|$request_uri";
+        proxy_buffers 8 32k;
+        proxy_buffer_size 64k;
+        proxy_cache_valid 200 1d; # TODO: Tune cache validity time, should it expire at all?
+        proxy_cache_use_stale error timeout invalid_header updating http_500 http_502 http_503 http_504;
         add_header X-Cached $upstream_cache_status;
     }
 }
