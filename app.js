@@ -101,10 +101,20 @@ router.get('/web4/login', withNear, withContractId, async ctx => {
         query: { callback_url }
     } = ctx;
 
+    const appPrivateKey = ctx.cookies.get('web4_private_key');
+    let keyPair
+    if (appPrivateKey) {
+        keyPair = KeyPair.fromString(appPrivateKey);
+    } else {
+        keyPair = KeyPair.fromRandom('ed25519');
+        ctx.cookies.set('web4_private_key', keyPair.toString());
+    }
+
     const loginCompleteUrl = `${ctx.origin}/web4/login/complete?${qs.stringify({ callback_url })}`;
     ctx.redirect(signInURL({
         walletUrl: config.walletUrl,
         contractId,
+        publicKey: keyPair.getPublicKey().toString(),
         successUrl: loginCompleteUrl,
         failureUrl: loginCompleteUrl
     }));
@@ -141,20 +151,38 @@ router.get('/web4/logout', async ctx => {
 const DEFAULT_GAS = '300' + '000000000000';
 
 router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAccountId, requireAccountId, async ctx => {
-    // TODO: Sign transaction with private key and account from cookies
     // TODO: Accept both json and form submission
 
     const accountId = ctx.accountId;
 
     const allKeys = (ctx.cookies.get('web4_all_keys') || '').split(',');
+    const appPrivateKey = ctx.cookies.get('web4_private_key');
 
     const { contractId, methodName } = ctx.params;
     const { body } = ctx.request;
-    const { web4_gas: gas, web4_deposit: deposit, web4_callback_url: callbackUrl } = body;
+    const { web4_gas: gas, web4_deposit: deposit, web4_callback_url } = body;
     const args = Object.keys(body)
         .filter(key => !key.startsWith('web4_'))
         .map(key => ({ [key]: body[key] }))
         .reduce((a, b) => ({...a, ...b}), {});
+
+    const callbackUrl = new URL(web4_callback_url || '/', ctx.origin).toString()
+
+    // Check if can be signed without wallet
+    if (appPrivateKey && accountId == contractId && !deposit || deposit == '0') {
+        const keyPair = KeyPair.fromString(appPrivateKey);
+        const appKeyStore = new InMemoryKeyStore();
+        await appKeyStore.setKey(ctx.near.connection.networkId, accountId, keyPair);
+
+        const near = await connect({ ...ctx.near.config, keyStore: appKeyStore });
+        const account = await near.account(accountId);
+        // TODO: Test this
+
+        await account.functionCall({ contractId, methodName, args, gas: gas || DEFAULT_GAS, deposit: deposit || '0' });
+        ctx.redirect(callbackUrl);
+        // TODO: Pass transaction hashes, etc to callback?
+        return;
+    }
 
     // NOTE: publicKey, nonce, blockHash keys are faked as reconstructed by wallet
     const transaction = new Transaction({
@@ -170,7 +198,7 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAcc
     const url = signTransactionsURL({
         walletUrl: config.walletUrl,
         transactions: [transaction],
-        callbackUrl: new URL(callbackUrl || '/', ctx.origin).toString()
+        callbackUrl
     });
     ctx.redirect(url);
     // TODO: Need to do something else than wallet redirect for CORS-enabled fetch
