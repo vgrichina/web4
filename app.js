@@ -121,10 +121,9 @@ router.get('/web4/login', withNear, withContractId, async ctx => {
 });
 
 router.get('/web4/login/complete', async ctx => {
-    const { account_id, all_keys, callback_url } = ctx.query;
+    const { account_id, callback_url } = ctx.query;
     if (account_id) {
         ctx.cookies.set('web4_account_id', account_id);
-        ctx.cookies.set('web4_all_keys', all_keys);
         ctx.body = `Logged in as ${account_id}`;
     } else {
         ctx.body = `Couldn't login`;
@@ -155,7 +154,6 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAcc
 
     const accountId = ctx.accountId;
 
-    const allKeys = (ctx.cookies.get('web4_all_keys') || '').split(',');
     const appPrivateKey = ctx.cookies.get('web4_private_key');
 
     const { contractId, methodName } = ctx.params;
@@ -290,9 +288,9 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
             const res = await fetch(absoluteUrl);
             if (!status) {
                 ctx.status = res.status;
-            }   
-            
-            
+            }
+
+
             const needToUncompress = !!res.headers.get('content-encoding');
             for (let [key, value] of res.headers.entries()) {
                 if (needToUncompress && ['content-encoding', 'content-length'].includes(key)) {
