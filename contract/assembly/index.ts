@@ -1,99 +1,7 @@
 
 import { context, ContractPromise, ContractPromiseBatch, logging, storage, u128, util } from 'near-sdk-as'
-
-@nearBindgen
-class Web4Request {
-    accountId: string | null;
-    path: string;
-    params: Map<string, string>;
-    query: Map<string, Array<string>>;
-    preloads: Map<string, Web4Response>;
-}
-
-@nearBindgen
-class Web4Response {
-    contentType: string;
-    status: u32;
-    body: Uint8Array;
-    bodyUrl: string;
-    preloadUrls: string[] = [];
-}
-
-function quotedAttribute(name: string, value: string): string {
-    return `${name}="${value.replaceAll('"', '&quot;')}"`;
-}
-
-class HtmlAttributes {
-    id: string | null;
-    name: string | null;
-    className: string | null;
-    style: string | null;
-
-    toString(): string {
-        let result = "";
-        if (this.id) {
-            result += quotedAttribute("id", this.id!);
-        }
-        if (this.name) {
-            result += quotedAttribute("name", this.name!);
-        }
-        if (this.className) {
-            result += quotedAttribute("class", this.className!);
-        }
-        if (this.style) {
-            result += quotedAttribute("style", this.style!);
-        }
-        return result;
-    }
-}
-
-class HtmlFormAttributes extends HtmlAttributes {
-    action: string | null;
-    method: string = "POST";
-
-    toString(): string {
-        let result = super.toString();
-        if (this.action) {
-            result += quotedAttribute("action", this.action!);
-        }
-        if (this.method) {
-            result += quotedAttribute("method", this.method);
-        }
-        return result;
-    }
-}
-
-function htmlTag(tagName: string, attrs: HtmlAttributes, content: string[] | null = null): string {
-    return `<${tagName} ${attrs}>${content ? content.join('\n') : ''}</${tagName}>`;
-}
-
-function form(attrs: HtmlFormAttributes, content: string[] | null = null): string {
-    return htmlTag('form', attrs, content);
-}
-
-function textarea(attrs: HtmlAttributes, content: string[] | null = null): string {
-    return htmlTag('textarea', attrs, content);
-}
-
-function button(attrs: HtmlAttributes, content: string[] | null = null): string {
-    return htmlTag('button', attrs, content);
-}
-
-function htmlResponse(text: string): Web4Response {
-    return { contentType: 'text/html; charset=UTF-8', body: util.stringToBytes(text) };
-}
-
-function preloadUrls(urls: string[]): Web4Response {
-    return { preloadUrls: urls };
-}
-
-function bodyUrl(url: string): Web4Response {
-    return { bodyUrl: url };
-}
-
-function status(status: u32): Web4Response {
-    return { status };
-}
+import { Web4Request, Web4Response, htmlResponse, preloadUrls, bodyUrl, status } from './web4';
+import { form, textarea, button } from './html';
 
 function assertOwner(): void {
     // NOTE: Can change this check to alow different owners
@@ -151,9 +59,6 @@ function messagesHtml(messages: GuestBookMessage[]): string {
 }
 
 export function web4_get(request: Web4Request): Web4Response {
-    if (request.path == '/test') {
-    }
-
     if (request.path == '/messages') {
         const getMessagesUrl = '/web4/contract/guest-book.testnet/getMessages';
         // Request preload of dependency URLs
