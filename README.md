@@ -18,11 +18,15 @@ static resources and blockchain logic.
 * Every `.near` account receives a subdomain under [https://near.page](https://near.page).
     * E.g. `thewiki.near` serves [https://thewiki.near.page](https://thewiki.near.page).
 * Use IPFS with Filecoin to host larger files
+* Access blockchain via REST API
 
 ## How it works?
 
 There is an HTTP gateway to NEAR blockchain which allows smart contract to handle arbitrary GET requests.
-Every smart contract on NEAR also gets corresponding API endpoint which can be accessed through regular HTTP requests.
+
+Smart contract can either render response directly or redirect to other URL, including hosted on IPFS.
+
+Web app deployed using web4 also gets full access to the entirety of the [fast-near API](https://github.com/vgrichina/fast-near#http-api) mounted on it's own domain under `/web4/near` path. This allows the app to interact with NEAR blockchain without need to contact any external services and manage their URLs.
 
 ## Known web4 sites
 
@@ -92,6 +96,8 @@ export function web4_get(request: Web4Request): Web4Response {
 
 Basically smart contract just needs to implement `web4_get` method to take in and return data in specific format.
 
+Then you can deploy it to the blockchain and use it to host your website.
+
 ### Request
 
 ```ts
@@ -135,6 +141,32 @@ E.g contract above preloads has form that gets posted to `/web4/contract/guest-b
 Note that both JSON and form data are supported. When transaction is processed by server user gets redirected to wallet for signing this transaction.
 
 In future there is a plan to allow sending app-specific key as a cookie to sign limited subset of transactions without confirmation in wallet.
+
+## HTTP API
+
+###  `/web4/near/:contractAccount/call/:methodName`
+
+#### POST
+
+Create transaction to call contract method with given name.
+
+### `/web4/near/*`
+
+Exposes [fast-near REST API](https://github.com/vgrichina/fast-near#http-api) in it's entirety.
+
+###  **deprecated** `/web4/contract/:contractAccount/:methodName`
+
+#### POST
+
+Create transaction to call contract method with given name.
+
+Deprecated. Use `/web4/contract/:contractAccount/call/:methodName` instead.
+
+#### GET
+
+Call contract view method with given name and parameters passed via query args.
+
+Deprecated. Use corresponding [fast-near method](https://github.com/vgrichina/fast-near#call-view-method) instead.
 
 ## Rust support
 
