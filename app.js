@@ -96,19 +96,16 @@ router.get('/web4/contract/:contractId/:methodName', withNear, async ctx => {
 router.get('/web4/login', withNear, withContractId, async ctx => {
     let {
         contractId,
-        query: { callback_url }
+        query: { web4_callback_url }
     } = ctx;
 
-    const appPrivateKey = ctx.cookies.get('web4_private_key');
-    let keyPair
-    if (appPrivateKey) {
-        keyPair = KeyPair.fromString(appPrivateKey);
-    } else {
-        keyPair = KeyPair.fromRandom('ed25519');
-        ctx.cookies.set('web4_private_key', keyPair.toString());
-    }
+    const keyPair = KeyPair.fromRandom('ed25519');
+    ctx.cookies.set('web4_private_key', keyPair.toString(), { httpOnly: false });
+    ctx.cookies.set('web4_account_id', null, { httpOnly: false });
 
-    const loginCompleteUrl = `${ctx.origin}/web4/login/complete?${qs.stringify({ callback_url })}`;
+    const callbackUrl = new URL(web4_callback_url || ctx.get('referrer') || '/', ctx.origin).toString();
+
+    const loginCompleteUrl = `${ctx.origin}/web4/login/complete?${qs.stringify({ web4_callback_url: callbackUrl })}`;
     ctx.redirect(signInURL({
         walletUrl: config.walletUrl,
         contractId,
@@ -119,30 +116,31 @@ router.get('/web4/login', withNear, withContractId, async ctx => {
 });
 
 router.get('/web4/login/complete', async ctx => {
-    const { account_id, callback_url } = ctx.query;
+    const { account_id, web4_callback_url } = ctx.query;
     if (account_id) {
-        ctx.cookies.set('web4_account_id', account_id);
+        ctx.cookies.set('web4_account_id', account_id, { httpOnly: false });
         ctx.body = `Logged in as ${account_id}`;
     } else {
         ctx.body = `Couldn't login`;
     }
 
-    // TODO: Require callback URL? Is referrer useful?
-    if (callback_url) {
-        ctx.redirect(callback_url);
+    if (!web4_callback_url) {
+        ctx.throw(400, 'Missing web4_callback_url');
     }
+
+    ctx.redirect(web4_callback_url);
 });
 
 router.get('/web4/logout', async ctx => {
     let {
-        query: { callback_url }
+        query: { web4_callback_url }
     } = ctx;
-    // TODO: Validate callback_url / have default?
 
     ctx.cookies.set('web4_account_id');
-    // TODO: Remove private key cookie (ideally also somehow remove key from account?)
+    ctx.cookies.set('web4_private_key');
 
-    ctx.redirect(callback_url);
+    const callbackUrl = new URL(web4_callback_url || ctx.get('referrer') || '/', ctx.origin).toString();
+    ctx.redirect(callbackUrl);
 });
 
 const DEFAULT_GAS = '300' + '000000000000';
@@ -162,22 +160,35 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAcc
         .map(key => ({ [key]: body[key] }))
         .reduce((a, b) => ({...a, ...b}), {});
 
-    const callbackUrl = new URL(web4_callback_url || '/', ctx.origin).toString()
+    const callbackUrl = new URL(web4_callback_url || ctx.get('referrer') || '/', ctx.origin).toString()
 
     // Check if can be signed without wallet
-    if (appPrivateKey && accountId == contractId && !deposit || deposit == '0') {
+    if (appPrivateKey && (!deposit || deposit == '0')) {
         const keyPair = KeyPair.fromString(appPrivateKey);
         const appKeyStore = new InMemoryKeyStore();
         await appKeyStore.setKey(ctx.near.connection.networkId, accountId, keyPair);
 
         const near = await connect({ ...ctx.near.config, keyStore: appKeyStore });
-        const account = await near.account(accountId);
-        // TODO: Test this
 
-        await account.functionCall({ contractId, methodName, args, gas: gas || DEFAULT_GAS, deposit: deposit || '0' });
-        ctx.redirect(callbackUrl);
-        // TODO: Pass transaction hashes, etc to callback?
-        return;
+        const { permission: { FunctionCall }} = await near.connection.provider.query({
+            request_type: 'view_access_key',
+            account_id: accountId,
+            public_key: keyPair.getPublicKey().toString(),
+            finality: 'optimistic'
+        });
+        if (FunctionCall && FunctionCall.receiver_id == contractId) {
+            const account = await near.account(accountId);
+            const result = await account.functionCall({ contractId, methodName, args, gas: gas || DEFAULT_GAS, deposit: deposit || '0' });
+            // TODO: when used from fetch, etc shouldn't really redirect. Judge based on Accepts header?
+            if (ctx.request.type == 'application/x-www-form-urlencoded') {
+                ctx.redirect(callbackUrl);
+                // TODO: Pass transaction hashes, etc to callback?
+            } else {
+                // TODO: Decide what exactly to return
+                ctx.body = result;
+            }
+            return;
+        }
     }
 
     // NOTE: publicKey, nonce, blockHash keys are faked as reconstructed by wallet

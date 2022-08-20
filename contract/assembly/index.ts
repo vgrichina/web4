@@ -80,7 +80,7 @@ export function web4_get(request: Web4Request): Web4Response {
         } else {
             // User needs to login
             formOrLoginLink = `
-                Please <a href="/web4/login?callback_url=${request.path}">login</a> to post messages.
+                Please <a href="/web4/login">login</a> to post messages.
             `;
         }
 
@@ -103,7 +103,7 @@ export function web4_get(request: Web4Request): Web4Response {
         // User is logged in, we can welcome them
         return styledPage(`
             Hello to <b>${request.accountId!}</b> from <code>${request.path}</code>.
-            <a href="/web4/logout?callback_url=${request.path}">Logout</a>.
+            <a href="/web4/logout">Logout</a>.
         `);
     }
 
