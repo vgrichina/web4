@@ -94,8 +94,6 @@ router.get('/web4/contract/:contractId/:methodName', withNear, async ctx => {
 });
 
 router.get('/web4/login', withNear, withContractId, async ctx => {
-    // TODO: Generate private key, return in cookie?
-
     let {
         contractId,
         query: { callback_url }
