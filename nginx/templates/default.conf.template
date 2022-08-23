@@ -14,8 +14,21 @@ upstream ipfs {
     keepalive 16;
 }
 
+map $http_referer $bad_referer {
+    hostnames;
+
+    default                           0;
+
+    # Put regexes for undesired referers here
+    "~www.dutamasdental.com"             1;
+}
+
 server {
     listen 80 default_server;
+
+    if ($bad_referer) {
+        return 444;
+    }
 
     location / {
         proxy_set_header Host $host;
