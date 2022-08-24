@@ -64,6 +64,9 @@ server {
         proxy_set_header Connection "";
         proxy_pass https://ipfs;
 
+        # IPFS gateway can pause for a long time before response, it's better to fail in that case
+        proxy_read_timeout 5s;
+
         proxy_cache small;
         proxy_cache_key "$host|$request_uri";
         proxy_buffers 8 32k;
