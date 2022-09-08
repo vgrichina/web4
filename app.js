@@ -96,7 +96,7 @@ router.get('/web4/contract/:contractId/:methodName', withNear, async ctx => {
 router.get('/web4/login', withNear, withContractId, async ctx => {
     let {
         contractId,
-        query: { web4_callback_url }
+        query: { web4_callback_url, web4_contract_id }
     } = ctx;
 
     const keyPair = KeyPair.fromRandom('ed25519');
@@ -108,7 +108,7 @@ router.get('/web4/login', withNear, withContractId, async ctx => {
     const loginCompleteUrl = `${ctx.origin}/web4/login/complete?${qs.stringify({ web4_callback_url: callbackUrl })}`;
     ctx.redirect(signInURL({
         walletUrl: config.walletUrl,
-        contractId,
+        contractId: web4_contract_id || contractId,
         publicKey: keyPair.getPublicKey().toString(),
         successUrl: loginCompleteUrl,
         failureUrl: loginCompleteUrl
