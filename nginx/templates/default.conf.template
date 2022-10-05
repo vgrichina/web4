@@ -72,7 +72,7 @@ server {
         proxy_cache_key "$host|$request_uri";
         proxy_buffers 8 32k;
         proxy_buffer_size 64k;
-        proxy_cache_valid 200 1d; # TODO: Tune cache validity time, should it expire at all?
+        proxy_cache_valid 200 1m; # TODO: Tune cache validity time, should it expire at all?
         proxy_cache_use_stale error timeout invalid_header updating http_500 http_502 http_503 http_504;
         add_header X-Cached $upstream_cache_status;
     }
