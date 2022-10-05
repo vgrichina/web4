@@ -67,6 +67,8 @@ server {
 
         # IPFS gateway can pause for a long time before response, it's better to fail in that case
         proxy_read_timeout 5s;
+        # Lock is on to avoid bombarding IPFS gateway with same request when content not available yet
+        proxy_cache_lock on;
 
         proxy_cache small;
         proxy_cache_key "$host|$request_uri";
