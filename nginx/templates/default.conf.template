@@ -9,9 +9,9 @@ upstream web4 {
 upstream ipfs {
     # TODO: Add more upstreams and solid failover strategy
 
-#    server 135.181.139.156:8080;
+    server 135.181.139.156:8080;
 #    server 65.108.14.215:8001;
-    server ipfs-gateway:8080;
+#    server ipfs-gateway:8080;
 
     keepalive 16;
 }
