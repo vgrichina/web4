@@ -1,8 +1,15 @@
 
 # web4
 
-Web4 is a new way to distribute decentralized apps.
-You only need to deploy one smart contract using WebAssembly to host your app HTTP backend,
+## What is web4?
+
+- Decentralised ownership and hosting
+- Content permanence by default, no more expired links
+- Offline friendly
+- Web presence controlled by user
+- Interactive mobile apps linked together as websites, no appstores
+
+You only need to deploy single smart contract using WebAssembly to host your app HTTP backend,
 static resources and blockchain logic.
 
 ## TL;DR
@@ -10,11 +17,38 @@ static resources and blockchain logic.
 * Manage website frontend in smart contract
 * Every `.near` account receives a subdomain under [https://near.page](https://near.page).
     * E.g. `thewiki.near` serves [https://thewiki.near.page](https://thewiki.near.page).
+* Use IPFS with Filecoin to host larger files
 
 ## How it works?
 
 There is an HTTP gateway to NEAR blockchain which allows smart contract to handle arbitrary GET requests.
 Every smart contract on NEAR also gets corresponding API endpoint which can be accessed through regular HTTP requests.
+
+## Known web4 sites
+
+- https://thewiki.near.page
+- https://lands.near.page
+- https://zavodil.near.page
+- https://psalomo.near.page
+- https://oracle-prices.near.page
+- https://orderly.near.page
+- https://theegg.near.page
+- https://twelvetone.near.page
+- https://sotg.near.page
+- https://pcards.near.page
+- https://aclot.near.page
+- https://wlog.near.page
+- https://1chess.near.page
+- https://vlad.near.page
+
+## Useful tools
+
+- HTTP gateway https://github.com/vgrichina/web4
+- High performance RPC https://github.com/vgrichina/fast-near
+- Deploy tool  https://github.com/vgrichina/web4-deploy
+- Rust starter https://github.com/frol/near-web4-demo
+- Self-hosted Linktree  https://github.com/vgrichina/web4-littlelink
+- Svelte starter http://svelt.near.page
 
 ## Example contract (in AssemblyScript)
 
@@ -140,6 +174,7 @@ This project aims to make trade offs based on these priorities:
     - [ ] Access view calls via POST requests
     - [x] Post transactions with POST through wallet redirect
     - [ ] Polish login and transaction flow with wallet
+    - [ ] Support different wallets
 - Decentralization
     - [x] Standalone server to run
     - [ ] .near domain support through hosts file, local certificate authority, etc
@@ -165,3 +200,4 @@ This project aims to make trade offs based on these priorities:
     - [ ] Voice API
     - [ ] web4 wallet
     - [ ] App launcher for wallet (pre-selecting necessary account in app)
+    - [ ] Instant mobile apps using WebAssembly
