@@ -9,7 +9,8 @@ upstream web4 {
 upstream ipfs {
     # TODO: Add more upstreams and solid failover strategy
 
-    server 65.109.66.194:8080;
+    #server 65.109.66.194:8080;
+    server ipfs.near.social:443;
 
     keepalive 16;
 }
@@ -62,7 +63,8 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Connection "";
-        proxy_pass http://ipfs;
+        #proxy_pass http://ipfs;
+        proxy_pass https://ipfs;
 
         # IPFS gateway can pause for a long time before response, it's better to fail in that case
         proxy_read_timeout 5s;
