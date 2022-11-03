@@ -23,6 +23,21 @@ if (WEB4_KEY_FILE && WEB4_CERT_FILE) {
 
     // Create HTTPS proxy server intercepting .near.page requests
     const proxyServer = http.createServer(function (req, res) {
+        if (req.url == '/') {
+            res.setHeader('Content-Type', 'application/x-ns-proxy-autoconfig');
+            res.write(`
+                function FindProxyForURL(url, host) {
+                    if (dnsDomainIs(host, ".near.page") || dnsDomainIs(host, ".testnet.page")) {
+                        return "PROXY localhost:${PROXY_PORT}";
+                    }
+
+                    return "DIRECT";
+                }
+            `);
+            res.end();
+            return;
+        }
+
         // Unencrypted HTTP proxy is not supported
         res.writeHead(503);
         res.write('HTTP proxy is not supported');
