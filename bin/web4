@@ -2,5 +2,59 @@
 const app = require('../app');
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT);
-console.log('Listening on http://localhost:%d/', PORT);
+const PROXY_PORT = process.env.PROXY_PORT || 8080;
+const WEB4_KEY_FILE = process.env.WEB4_KEY_FILE;
+const WEB4_CERT_FILE = process.env.WEB4_CERT_FILE;
+if (WEB4_KEY_FILE && WEB4_CERT_FILE) {
+    const https = require('https');
+    const http = require('http');
+    const net = require('net');
+    const fs = require('fs');
+
+    const options = {
+        key: fs.readFileSync(WEB4_KEY_FILE),
+        cert: fs.readFileSync(WEB4_CERT_FILE)
+    };
+
+    // Create web4 server with https enabled
+    https.createServer(options, app.callback()).listen(PORT, () => {
+        console.log('web4 gateway listening on https://localhost:%d/', PORT);
+    });
+
+    // Create HTTPS proxy server intercepting .near.page requests
+    const proxyServer = http.createServer(function (req, res) {
+        // Unencrypted HTTP proxy is not supported
+        res.writeHead(503);
+        res.write('HTTP proxy is not supported');
+        res.end();
+    }).listen(PROXY_PORT);
+    console.log('HTTPS proxy listening on localhost:%d', PROXY_PORT);
+
+    proxyServer.on('connect', function (req, socket) {
+        console.log('Receiving proxy request for:', req.url);
+    
+        let serverUrl = new URL('https://' + req.url);
+        if (serverUrl.hostname.endsWith('.near.page')) {
+            serverUrl = new URL(`https://localhost:${PORT}`);
+        }
+        console.log('Proxying to:', serverUrl.toString());
+
+        const srvSocket = net.connect(serverUrl.port || 443, serverUrl.hostname, function () {
+            socket.write('HTTP/1.1 200 Connection Established\r\n' +
+                'Proxy-agent: Node-Proxy\r\n' +
+                '\r\n');
+            srvSocket.pipe(socket);
+            socket.pipe(srvSocket);
+        });
+        srvSocket.on('error', function (err) {
+            console.error('Proxy server socket error:', err);
+        });
+        socket.on('error', function (err) {
+            console.error('Proxy client socket error:', err);
+        });
+    });
+} else {
+    app.listen(PORT, () => {
+        console.log('web4 gateway listening on http://localhost:%d/', PORT);
+    });
+}
