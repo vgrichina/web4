@@ -1,6 +1,13 @@
 
 # web4
 
+## TL;DR
+
+* Manage website frontend in smart contract
+* Every `.near` account receives a subdomain under [https://near.page](https://near.page).
+    * E.g. `thewiki.near` serves [https://thewiki.near.page](https://thewiki.near.page).
+* Use IPFS with Filecoin to host larger files
+
 ## What is web4?
 
 - Decentralised ownership and hosting
@@ -9,19 +16,13 @@
 - Web presence controlled by user
 - Interactive mobile apps linked together as websites, no appstores
 
+## How it works?
+
 You only need to deploy single smart contract using WebAssembly to host your app HTTP backend,
 static resources and blockchain logic.
 
-## TL;DR
+There is an [HTTP gateway](https://github.com/vgrichina/web4) to NEAR blockchain which allows smart contract to handle arbitrary GET requests.
 
-* Manage website frontend in smart contract
-* Every `.near` account receives a subdomain under [https://near.page](https://near.page).
-    * E.g. `thewiki.near` serves [https://thewiki.near.page](https://thewiki.near.page).
-* Use IPFS with Filecoin to host larger files
-
-## How it works?
-
-There is an HTTP gateway to NEAR blockchain which allows smart contract to handle arbitrary GET requests.
 Every smart contract on NEAR also gets corresponding API endpoint which can be accessed through regular HTTP requests.
 
 ## Known web4 sites
