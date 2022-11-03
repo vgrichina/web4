@@ -65,6 +65,9 @@ server {
         proxy_set_header Connection "";
         #proxy_pass http://ipfs;
         proxy_pass https://ipfs;
+        # When using HTTP upstream need to activate SNI (server name indication)
+        proxy_ssl_name $host;
+        proxy_ssl_server_name on;
 
         # IPFS gateway can pause for a long time before response, it's better to fail in that case
         proxy_read_timeout 5s;
