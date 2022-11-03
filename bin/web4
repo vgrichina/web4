@@ -27,7 +27,7 @@ if (WEB4_KEY_FILE && WEB4_CERT_FILE) {
             res.setHeader('Content-Type', 'application/x-ns-proxy-autoconfig');
             res.write(`
                 function FindProxyForURL(url, host) {
-                    if (dnsDomainIs(host, ".near.page") || dnsDomainIs(host, ".testnet.page")) {
+                    if ((dnsDomainIs(host, ".near.page") || dnsDomainIs(host, ".testnet.page")) && !host.includes("ipfs.")) {
                         return "PROXY localhost:${PROXY_PORT}";
                     }
 
