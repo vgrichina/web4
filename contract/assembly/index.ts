@@ -17,6 +17,11 @@ export function web4_setStaticUrl(url: string): void {
     storage.set(WEB4_STATIC_URL_KEY, url);
 }
 
+// Returns current static content URL from smart contract storage
+export function web4_getStaticUrl(): string | null {
+    return storage.get<string>(WEB4_STATIC_URL_KEY);
+}
+
 function styledPage(html: string): Web4Response {
     return htmlResponse(`
         <link rel="stylesheet" href="normalize.css">
