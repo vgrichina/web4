@@ -207,7 +207,9 @@ This project aims to make trade offs based on these priorities:
     - [ ] Support different wallets
 - Decentralization
     - [x] Standalone server to run
-    - [ ] .near domain support through hosts file, local certificate authority, etc
+    - [x] .near domain support through HTTPS MITM proxy
+    - [x] Proxy auto-configuration file
+    - [ ] User-friendly installer
 - Prepare for wider use
     - [ ] Publish standalone package runnable with `npx`
     - [ ] Tests
