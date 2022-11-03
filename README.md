@@ -153,6 +153,33 @@ Every contract gets corresponding domain, e.g. check out https://web4.near.page 
 
 This works same as `near.page` but for contracts deployed on testnet. Every `account.testnet` gets corresponding `account.testnet.page` domain.
 
+# Running locally
+
+1. Install [mkcert](https://mkcert.dev/).
+2. Install local certificate authority (this allows browser to trust self-signed certificates):
+    ```bash
+    mkcert -install
+    ```
+3. Create `*.near.page` SSL certificate:
+    ```bash
+    mkcert "*.near.page"
+    ```
+3. Run `web4` man-in-the-middle proxy locally:
+    ```bash
+    IPFS_GATEWAY_URL=https://ipfs.near.social NODE_ENV=mainnet WEB4_KEY_FILE=./_wildcard.near.page-key.pem WEB4_CERT_FILE=./_wildcard.near.page.pem npx web4-near
+    ```
+4. Setup browser to use [automatic proxy configuration file](https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling/Proxy_Auto-Configuration_PAC_file) at `http://localhost:8080/` or to use `localhost:8080` as an HTTPS proxy server. 
+
+## Environment variables
+
+- `NODE_ENV` - `mainnet` or `testnet` to select network ID to use with NEAR config and key store
+- `IPFS_GATEWAY_URL` - URL of IPFS gateway to use for `ipfs://` URLs
+- `WEB4_KEY_FILE` - path to SSL key file
+- `WEB4_CERT_FILE` - path to SSL certificate file
+- `PORT` - port to listen on (default: `3000`)
+- `PROXY_PORT` - port to listen on for proxy requests (default: `8080`). HTTPS MITM proxy is run on this port when `WEB4_KEY_FILE` and `WEB4_CERT_FILE` are provided.
+- `FAST_NEAR_URL` - URL of [fast-near](https://github.com/vgrichina/fast-near) RPC server to use for NEAR API. Overrides NEAR RPC config selected by `NODE_ENV`.
+
 # Priorities
 
 This project aims to make trade offs based on these priorities:
