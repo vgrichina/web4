@@ -5,6 +5,11 @@
   "bin": {
     "web4": "bin/web4"
   },
+  "files": [
+    "bin",
+    "util",
+    "*.js"
+  ],
   "main": "app.js",
   "license": "MIT",
   "scripts": {
