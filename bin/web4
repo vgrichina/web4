@@ -68,6 +68,8 @@ if (WEB4_KEY_FILE && WEB4_CERT_FILE) {
             console.error('Proxy client socket error:', err);
         });
     });
+
+    console.log(`Proxy auto-configuration file: http://localhost:${PROXY_PORT}/`);
 } else {
     app.listen(PORT, () => {
         console.log('web4 gateway listening on http://localhost:%d/', PORT);
