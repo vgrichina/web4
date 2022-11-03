@@ -27,6 +27,7 @@ Every smart contract on NEAR also gets corresponding API endpoint which can be a
 
 ## Known web4 sites
 
+- https://awesomeweb4.near.page
 - https://thewiki.near.page
 - https://lands.near.page
 - https://zavodil.near.page
@@ -50,6 +51,7 @@ Every smart contract on NEAR also gets corresponding API endpoint which can be a
 - Rust starter https://github.com/frol/near-web4-demo
 - Self-hosted Linktree  https://github.com/vgrichina/web4-littlelink
 - Svelte starter http://svelt.near.page
+- Web4 app catalog https://awesomeweb4.near.page
 
 ## Example contract (in AssemblyScript)
 
