@@ -47,8 +47,10 @@ Every smart contract on NEAR also gets corresponding API endpoint which can be a
 
 - HTTP gateway https://github.com/vgrichina/web4
 - High performance RPC https://github.com/vgrichina/fast-near
-- Deploy tool  https://github.com/vgrichina/web4-deploy
-- Rust starter https://github.com/frol/near-web4-demo
+- Deploy tool https://github.com/vgrichina/web4-deploy
+- Rust starter projects:
+  - https://github.com/zavodil/near-web4-contract
+  - https://github.com/frol/near-web4-demo
 - Self-hosted Linktree  https://github.com/vgrichina/web4-littlelink
 - Svelte starter http://svelt.near.page
 - Web4 app catalog https://awesomeweb4.near.page
