@@ -270,7 +270,7 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
             throw e;
         }
 
-        const { contentType, status, body, bodyUrl, preloadUrls } = res;
+        const { contentType, status, body, bodyUrl, preloadUrls, cacheControl } = res;
 
         if (status) {
             ctx.status = status;
