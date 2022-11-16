@@ -120,6 +120,7 @@ class Web4Response {
     body: Uint8Array;
     bodyUrl: string;
     preloadUrls: string[] = [];
+    cacheControl: string;
 }
 ```
 
@@ -140,6 +141,15 @@ E.g contract above preloads has form that gets posted to `/web4/contract/guest-b
 Note that both JSON and form data are supported. When transaction is processed by server user gets redirected to wallet for signing this transaction.
 
 In future there is a plan to allow sending app-specific key as a cookie to sign limited subset of transactions without confirmation in wallet.
+
+### Caching considerations
+
+By default all HTML responses can be cached for 1 minute (assumed dynamic content). 
+All images, videos, audio and CSS can be cached for 1 day (assumed static content).
+
+You can override this by setting `cacheControl` field in response.
+
+It's not recommened to cache content for too long as then it not going to be hot on IPFS gateway.
 
 ## Rust support
 

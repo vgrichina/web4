@@ -16,6 +16,7 @@ export class Web4Response {
     body: Uint8Array;
     bodyUrl: string;
     preloadUrls: string[] = [];
+    cacheControl: string;
 }
 
 export function htmlResponse(text: string): Web4Response {

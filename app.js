@@ -307,10 +307,28 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
                     // TODO: Figure out how to relay compressed stream instead
                     continue;
                 }
+                if (key == 'cache-control') {
+                    // NOTE: Underlying storage (IPFS) might be immutable, but smart contract can change where it's pointing to
+                    continue;
+                }
                 ctx.set(key, value);
             }
             if (contentType) {
                 ctx.type = contentType;
+            }
+            if (cacheControl) {
+                ctx.set('cache-control', cacheControl);
+            } else {
+                // Set reasonable defaults based on content type
+                if (ctx.type.startsWith('image/') || ctx.type.startsWith('video/') || ctx.type.startsWith('audio/') ||
+                        ctx.type === 'application/javascript' || ctx.type === 'text/css' ) {
+                    // NOTE: modern web apps typically have these static with a unique URL, so can cache for a long time (1 hour)
+                    ctx.set('cache-control', 'public, max-age=3600');
+                }
+                if (ctx.type === 'text/html') {
+                    // NOTE: HTML is typically generated on the fly, so can't cache for too long (1 minute)
+                    ctx.set('cache-control', 'public, max-age=60'); // 1 minute
+                }
             }
             ctx.body = res.body;
             return;
