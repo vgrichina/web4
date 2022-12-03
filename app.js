@@ -15,6 +15,12 @@ const IPFS_GATEWAY_URL = process.env.IPFS_GATEWAY_URL || 'https://ipfs.near.soci
 
 const config = require('./config')(process.env.NODE_ENV || 'development')
 
+async function withDebug(ctx, next) {
+    ctx.debug = require('debug')(`web4:${ctx.host}${ctx.path}?${qs.stringify(ctx.query)}`);
+
+    await next();
+}
+
 async function withNear(ctx, next) {
     // TODO: Why no default keyStore?
     const keyStore = new InMemoryKeyStore();
@@ -229,6 +235,7 @@ async function withContractId(ctx, next) {
 // TODO: Or is mapping enough?
 router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
     const {
+        debug,
         accountId,
         path,
         query
@@ -244,8 +251,10 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
                 .reduce((a, b) => ({...a, ...b}), {})
         }
     };
+    debug('methodParams', methodParams);
 
     for (let i = 0; i < MAX_PRELOAD_HOPS; i++) {
+        debug('hop', i);
         let res;
         try {
             res = await callViewFunction(ctx, contractId, 'web4_get', methodParams);
@@ -272,6 +281,8 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
 
         const { contentType, status, body, bodyUrl, preloadUrls, cacheControl } = res;
 
+        debug('response: %j', { status, contentType, body: !!body, bodyUrl, preloadUrls, cacheControl });
+
         if (status) {
             ctx.status = status;
             if (!body && !bodyUrl) {
@@ -293,12 +304,13 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
                 absoluteUrl = `${IPFS_GATEWAY_URL}/ipfs/${hostname}${pathname}${search}`;
             }
 
-            console.info('Loading', absoluteUrl);
+            debug('Loading', absoluteUrl);
             const res = await fetch(absoluteUrl);
+            debug('Loaded', absoluteUrl);
+            // TODO: Pass through error?
             if (!status) {
                 ctx.status = res.status;
             }
-
 
             const needToUncompress = !!res.headers.get('content-encoding');
             for (let [key, value] of res.headers.entries()) {
@@ -363,6 +375,7 @@ router.post('/(.*)', ctx => {
 // TODO: Need to query smart contract for rewrites config
 
 app
+    .use(withDebug)
     .use(async (ctx, next) => {
         console.log(ctx.method, ctx.host, ctx.path);
         await next();
