@@ -305,7 +305,8 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
             }
 
             debug('Loading', absoluteUrl);
-            const res = await fetch(absoluteUrl, { headers: { Referer:  ctx.headers.referer } });
+            const referer = ctx.headers.referer || (ctx.origin + ctx.path);
+            const res = await fetch(absoluteUrl, { headers: { Referer: referer } });
             debug('Loaded', absoluteUrl);
             // TODO: Pass through error?
             if (!status) {
