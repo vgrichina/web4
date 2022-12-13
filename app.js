@@ -305,7 +305,7 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
             }
 
             debug('Loading', absoluteUrl);
-            const referer = ctx.origin + ctx.path;
+            const referer = `https://${ctx.host}${ctx.path}`;
             console.log('referer', referer);
             const res = await fetch(absoluteUrl, { headers: { Referer: referer } });
             debug('Loaded', absoluteUrl);
