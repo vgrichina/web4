@@ -8,9 +8,11 @@ upstream web4 {
 
 upstream ipfs {
     # TODO: Add more upstreams and solid failover strategy
+    # TODO: If not found on NEARFS – fallthrough to some public IPFS gateway
 
     # server 65.109.66.194:8080;
-    server web4-ipfs:8080;
+    # server web4-ipfs:8080;
+    server nearfs:10000;
 
     keepalive 16;
 }
