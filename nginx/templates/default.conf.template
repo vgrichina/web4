@@ -10,7 +10,7 @@ upstream ipfs {
     # TODO: Add more upstreams and solid failover strategy
 
     # server 65.109.66.194:8080;
-    server web4-ipfs:8080;
+    server web4-ipfs-private:8080;
 
     keepalive 16;
 }
