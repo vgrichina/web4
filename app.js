@@ -300,16 +300,28 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
 
         if (bodyUrl) {
             let absoluteUrl = new URL(bodyUrl, ctx.origin).toString();
+            debug('Loading', absoluteUrl);
+
+            let urlsToCheck = [absoluteUrl];
             if (absoluteUrl.startsWith('ipfs:')) {
                 const { hostname, pathname, search } = new URL(absoluteUrl);
-                absoluteUrl = `${IPFS_GATEWAY_URL}/ipfs/${hostname}${pathname}${search}`;
+                urlsToCheck = [];
+                if (NEARFS_GATEWAY_URL) {
+                    urlsToCheck.push(`${NEARFS_GATEWAY_URL}/ipfs/${hostname}${pathname}${search}`);
+                }
+                urlsToCheck.push(`${IPFS_GATEWAY_URL}/ipfs/${hostname}${pathname}${search}`);
             }
 
-            debug('Loading', absoluteUrl);
-            const referer = `https://${ctx.host}${ctx.path}`;
-            console.log('referer', referer);
-            const res = await fetch(absoluteUrl, { headers: { Referer: referer } });
+            let res
+            for (let url of urlsToCheck) {
+                debug('Trying', url);
+                res = await fetch(url);
+                if (res.status == 200) {
+                    break;
+                }
+            }
             debug('Loaded', absoluteUrl);
+
             // TODO: Pass through error?
             if (!status) {
                 ctx.status = res.status;
