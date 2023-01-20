@@ -218,15 +218,35 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAcc
     // TODO: Need to do something else than wallet redirect for CORS-enabled fetch
 });
 
+function contractFromHost(host) {
+    if (host.endsWith('.near.page')) {
+        return host.replace(/.page$/, '');
+    }
+    if (host.endsWith('.testnet.page')) {
+        return host.replace(/.page$/, '');
+    }
+}
+
+const dns = require('dns').promises;
+
 async function withContractId(ctx, next) {
-    let contractId = process.env.CONTRACT_NAME;
-    if (ctx.host.endsWith('.near.page')) {
-        contractId = ctx.host.replace(/.page$/, '');
+    let contractId = contractFromHost(ctx.host);
+
+    if (!contractId) {
+        // Try to resolve custom domain CNAME record
+        try {
+            const addresses = await dns.resolveCname(ctx.host);
+            const address = addresses.find(contractFromHost);
+            if (address) {
+                contractId = contractFromHost(address);
+            }
+        } catch (e) {
+            console.log('Error resolving CNAME', ctx.host, e);
+            // Ignore
+        }
     }
-    if (ctx.host.endsWith('.testnet.page')) {
-        contractId = ctx.host.replace(/.page$/, '');
-    }
-    ctx.contractId = contractId;
+
+    ctx.contractId = contractId || process.env.CONTRACT_NAME;
 
     return await next();
 }
