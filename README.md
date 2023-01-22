@@ -222,6 +222,8 @@ This project aims to make trade offs based on these priorities:
     - [x] .near domain support through HTTPS MITM proxy
     - [x] Proxy auto-configuration file
     - [ ] User-friendly installer
+    - [ ] Expose IPFS gateway on every .near.page website
+    - [ ] Expose fast-near RPC on every .near.page website
 - Prepare for wider use
     - [ ] Publish standalone package runnable with `npx`
     - [ ] Tests
