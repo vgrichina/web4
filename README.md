@@ -209,6 +209,7 @@ This project aims to make trade offs based on these priorities:
     - [ ] Serve arbitrary POST requests
     - [x] Load content from HTTP URLs
     - [x] Load content from IPFS URLs
+    - [x] Load content from [NEARFS](https://github.com/vgrichina/nearfs) URLs
     - [ ] Load content from ArWeave URLs
     - [ ] Route configuration for better caching, etc
 - Access NEAR
@@ -216,7 +217,7 @@ This project aims to make trade offs based on these priorities:
     - [ ] Access view calls via POST requests
     - [x] Post transactions with POST through wallet redirect
     - [ ] Polish login and transaction flow with wallet
-    - [ ] Support different wallets
+    - [ ] Support different wallets from wallet-selector
 - Decentralization
     - [x] Standalone server to run
     - [x] .near domain support through HTTPS MITM proxy
@@ -225,13 +226,13 @@ This project aims to make trade offs based on these priorities:
     - [ ] Expose IPFS gateway on every .near.page website
     - [ ] Expose fast-near RPC on every .near.page website
 - Prepare for wider use
-    - [ ] Publish standalone package runnable with `npx`
+    - [x] Publish standalone package runnable with `npx`
     - [ ] Tests
     - [ ] Documentation
     - [ ] Landing page
     - [ ] Examples on different languages
-    - [ ] More efficient binary-based API
-    - [ ] Custom domain support
+    - [ ] More efficient binary-based API (`web4_raw_get`)
+    - [x] Custom domain support
     - [ ] Abuse report system (token curated registry or smth like that)
     - [ ] Billing
 - Future direction
