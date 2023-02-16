@@ -24,7 +24,7 @@
     "prestart": "npm run build:contract:debug && npm run dev:deploy:contract",
     "start": "env-cmd -f ./neardev/dev-account.env nodemon bin/web4 --watch . -e js",
     "dev": "nodemon --watch contract -e ts --exec \"npm run start\"",
-    "test": "tape test/*.test.js | tap-diff"
+    "test": "set -o pipefail; tape test/*.test.js | tap-diff"
   },
   "dependencies": {
     "koa": "^2.13.1",
