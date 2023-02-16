@@ -1598,10 +1598,10 @@ events-to-array@^1.0.1:
   resolved "https://registry.yarnpkg.com/events-to-array/-/events-to-array-1.1.2.tgz#2d41f563e1fe400ed4962fe1a4d5c6a7539df7f6"
   integrity sha512-inRWzRY7nG+aXZxBzEqYKB3HPgwflZRopAjDCHv0whhRx+MTUr1ei0ICZUypdyE0HRm4L2d5VEcIqLD6yl+BFA==
 
-fast-near@^0.4.1:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/fast-near/-/fast-near-0.4.1.tgz#8982112bfd1e6645d13a825dc049c739f775c26d"
-  integrity sha512-ZLZB3PAwAOVM5Gh5+w7TFaBTEG6GfSHuKGdVnl1yN6PQeUfrmR90SgIWj/hy+DdiVW+VUAXaJj8D8Y/AK9FFDQ==
+fast-near@^0.4.2:
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/fast-near/-/fast-near-0.4.2.tgz#6f8e8a02875fe770329f648a6a563ad0eebec320"
+  integrity sha512-bdh/6wPo3onZdMGnlf4cfLZNgSAepv6pwTjrcR/6phsEZ599eoUlrs45FaxNCUWWz4sZ0WxktAh2292hGd13sw==
   dependencies:
     "@koa/cors" "^3.1.0"
     "@noble/ed25519" "^1.3.0"
