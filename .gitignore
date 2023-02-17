@@ -3,3 +3,6 @@ neardev
 dist
 .DS_Store
 *.pem
+.nyc_output
+coverage
+yarn-error.log
