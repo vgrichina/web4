@@ -2,6 +2,7 @@ const test = require('tape');
 const fs = require('fs');
 const bs58 = require('bs58');
 const crypto = require('crypto');
+const { KeyPair } = require('near-api-js');
 
 process.env.FAST_NEAR_STORAGE_TYPE = 'lmdb';
 
@@ -126,4 +127,42 @@ test('web4-min set-static-url.near.page/css/brands.css (passthrough content type
     t.equal(res.headers['content-type'], 'text/css; charset=utf-8');
     t.match(res.text, /Skeleton V2.0.4/);
 });
+
+test('test.near.page/web4/login', async t => {
+    t.teardown(cleanup);
+
+    await dumpChangesToStorage(STREAMER_MESSAGE);
+
+    const res = await request
+        .get('/web4/login')
+        .set('Host', 'test.near.page');
+
+    t.equal(res.status, 302);
+    t.equal(res.headers['content-type'], 'text/html; charset=utf-8');
+    t.match(res.text, /Redirecting to/);
+    const location = res.headers['location'];
+    t.match(location, /https:\/\/wallet.testnet.near.org\/login\/?/);
+
+    const searchParams = new URL(location).searchParams;
+    const callbackUrl = 'http://test.near.page/web4/login/complete?web4_callback_url=http%3A%2F%2Ftest.near.page%2F';
+    t.equal(searchParams.get('success_url'), callbackUrl);
+    t.equal(searchParams.get('failure_url'), callbackUrl);
+    t.equal(searchParams.get('contract_id'), 'test.near');
+    const publicKey = searchParams.get('public_key');
+    t.match(publicKey, /^ed25519:/);
+
+    // Parse cookies into object
+    const cookies = {};
+    for (const cookie of res.headers['set-cookie']) {
+        const [key, value] = cookie.split('=');
+        cookies[key] = value.split(';')[0];
+    }
+
+    t.equal(cookies.web4_account_id, '');
+    t.ok(cookies.web4_private_key);
+
+    const keyPair = KeyPair.fromString(cookies.web4_private_key);
+    t.equal(publicKey, keyPair.getPublicKey().toString());
+});
+
 
