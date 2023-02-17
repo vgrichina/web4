@@ -151,7 +151,7 @@ const DEFAULT_GAS = '300' + '000000000000';
 router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAccountId, requireAccountId, async ctx => {
     // TODO: Accept both json and form submission
 
-    const accountId = ctx.accountId;
+    const { accountId, debug } = ctx;
 
     const appPrivateKey = ctx.cookies.get('web4_private_key');
 
@@ -164,15 +164,18 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAcc
         .reduce((a, b) => ({...a, ...b}), {});
 
     const callbackUrl = new URL(web4_callback_url || ctx.get('referrer') || '/', ctx.origin).toString()
+    debug('callbackUrl', callbackUrl);
 
     // Check if can be signed without wallet
     if (appPrivateKey && (!deposit || deposit == '0')) {
+        debug('Signing locally');
         const keyPair = KeyPair.fromString(appPrivateKey);
         const appKeyStore = new InMemoryKeyStore();
         await appKeyStore.setKey(ctx.near.connection.networkId, accountId, keyPair);
 
         const near = await connect({ ...ctx.near.config, keyStore: appKeyStore });
 
+        debug('Checking access key', keyPair.getPublicKey().toString());
         const { permission: { FunctionCall }} = await near.connection.provider.query({
             request_type: 'view_access_key',
             account_id: accountId,
@@ -180,8 +183,10 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAcc
             finality: 'optimistic'
         });
         if (FunctionCall && FunctionCall.receiver_id == contractId) {
+            debug('Access key found');
             const account = await near.account(accountId);
             const result = await account.functionCall({ contractId, methodName, args, gas: gas || DEFAULT_GAS, deposit: deposit || '0' });
+            debug('Result', result);
             // TODO: when used from fetch, etc shouldn't really redirect. Judge based on Accepts header?
             if (ctx.request.type == 'application/x-www-form-urlencoded') {
                 ctx.redirect(callbackUrl);
