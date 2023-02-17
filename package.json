@@ -30,7 +30,6 @@
     "koa": "^2.13.1",
     "koa-body": "^4.2.0",
     "koa-router": "^10.0.0",
-    "mime-types": "^2.1.35",
     "near-api-js": "^0.43.1",
     "node-fetch": "^2.6.1"
   },

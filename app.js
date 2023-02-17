@@ -251,19 +251,6 @@ async function withContractId(ctx, next) {
     return await next();
 }
 
-const mime = require('mime-types');
-function detectMimeType(url, body) {
-    const contentType = mime.lookup(url);
-    if (contentType) {
-        return contentType;
-    }
-    if (body && body.byteLength) {
-        return 'application/octet-stream';
-    }
-    // TODO: Check for other stuff and unify with NEARFS
-    return 'text/plain';
-}
-
 // TODO: Do contract method call according to mapping returned by web4_routes contract method
 // TODO: Use web4_get method in smart contract as catch all if no mapping?
 // TODO: Or is mapping enough?
@@ -326,7 +313,7 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
         }
 
         if (body) {
-            ctx.type = contentType || detectMimeType(bodyUrl, body);
+            ctx.type = contentType
             ctx.body = Buffer.from(body, 'base64');
             return;
         }
