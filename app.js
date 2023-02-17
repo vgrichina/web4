@@ -126,11 +126,7 @@ router.get('/web4/login/complete', async ctx => {
     const { account_id, web4_callback_url } = ctx.query;
     if (account_id) {
         ctx.cookies.set('web4_account_id', account_id, { httpOnly: false });
-        ctx.body = `Logged in as ${account_id}`;
-    } else {
-        ctx.body = `Couldn't login`;
     }
-
     if (!web4_callback_url) {
         ctx.throw(400, 'Missing web4_callback_url');
     }
