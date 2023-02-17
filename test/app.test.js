@@ -151,13 +151,7 @@ test('test.near.page/web4/login', async t => {
     const publicKey = searchParams.get('public_key');
     t.match(publicKey, /^ed25519:/);
 
-    // Parse cookies into object
-    const cookies = {};
-    for (const cookie of res.headers['set-cookie']) {
-        const [key, value] = cookie.split('=');
-        cookies[key] = value.split(';')[0];
-    }
-
+    const cookies = parseCookies(res);
     t.equal(cookies.web4_account_id, '');
     t.ok(cookies.web4_private_key);
 
@@ -165,4 +159,59 @@ test('test.near.page/web4/login', async t => {
     t.equal(publicKey, keyPair.getPublicKey().toString());
 });
 
+test('test.near.page/web4/login/complete missing callback', async t => {
+    t.teardown(cleanup);
+
+    await dumpChangesToStorage(STREAMER_MESSAGE);
+
+    const res = await request
+        .get('/web4/login/complete')
+        .set('Host', 'test.near.page');
+
+    t.equal(res.status, 400);
+    t.equal(res.text, 'Missing web4_callback_url');
+});
+
+test('test.near.page/web4/login/complete missing account_id', async t => {
+    t.teardown(cleanup);
+
+    await dumpChangesToStorage(STREAMER_MESSAGE);
+
+    const res = await request
+        .get('/web4/login/complete?web4_callback_url=http%3A%2F%2Ftest.near.page%2F')
+        .set('Host', 'test.near.page');
+
+    t.equal(res.status, 302);
+    t.equal(res.headers['content-type'], 'text/html; charset=utf-8');
+    t.match(res.text, /Redirecting to/);
+    t.equal(res.headers['location'], 'http://test.near.page/');
+    const cookies = parseCookies(res);
+    t.false(cookies.web4_account_id);
+});
+
+test('test.near.page/web4/login/complete success', async t => {
+    t.teardown(cleanup);
+
+    await dumpChangesToStorage(STREAMER_MESSAGE);
+
+    const res = await request
+        .get('/web4/login/complete?web4_callback_url=http%3A%2F%2Ftest.near.page%2F&account_id=test.near')
+        .set('Host', 'test.near.page');
+
+    t.equal(res.status, 302);
+    t.equal(res.headers['content-type'], 'text/html; charset=utf-8');
+    t.match(res.text, /Redirecting to/);
+    t.equal(res.headers['location'], 'http://test.near.page/');
+    const cookies = parseCookies(res);
+    t.equal(cookies.web4_account_id, 'test.near');
+});
+
+function parseCookies(res) {
+    const cookies = {};
+    for (const cookie of (res.headers['set-cookie'] || [])) {
+        const [key, value] = cookie.split('=');
+        cookies[key] = value.split(';')[0];
+    }
+    return cookies;
+}
 
