@@ -2,6 +2,7 @@ const test = require('tape');
 const fs = require('fs');
 const bs58 = require('bs58');
 const crypto = require('crypto');
+const nock = require('nock');
 const { KeyPair, transactions: { Transaction, SCHEMA } } = require('near-api-js');
 
 process.env.FAST_NEAR_STORAGE_TYPE = 'lmdb';
@@ -256,7 +257,6 @@ test('/web4/contract/test.near/web4_setStaticUrl method call through wallet', as
     const { location } = res.headers;
     t.match(location, /https:\/\/wallet.testnet.near.org\/sign\/?/);
     const { searchParams } = new URL(location);
-    console.log('callbackUrl', searchParams.get('callbackUrl'));
     t.equal(searchParams.get('callbackUrl'), 'http://test.near.page/');
     const transactionBase64 = searchParams.get('transactions');
     t.ok(transactionBase64);
@@ -269,6 +269,78 @@ test('/web4/contract/test.near/web4_setStaticUrl method call through wallet', as
     const { functionCall } = transaction.actions[0];
     t.equal(functionCall.methodName, 'web4_setStaticUrl');
     t.equal(Buffer.from(functionCall.args).toString('utf8'), '{"url":"test://url"}');
+});
+
+test.only('/web4/contract/test.near/web4_setStaticUrl method call with key in cookie', async t => {
+    await setup(t);
+
+    const keyPair = KeyPair.fromRandom('ed25519');
+
+    nock('https://rpc.testnet.near.org')
+        .post('/')
+        .times(2)
+        .reply(200, (url, body) => {
+            if (body.method === 'query') {
+                return {
+                    jsonrpc: '2.0',
+                    id: body.id,
+                    result: {
+                        block_height: 1,
+                        permission: {
+                            FunctionCall: {
+                                receiver_id: 'test.near',
+                                method_names: ['web4_setStaticUrl'],
+                            }
+                        }
+                    },
+                };
+            }
+            throw new Error('Unexpected request: ' + JSON.stringify(body));
+        })
+        .post('/').reply(200, (url, body) => {
+            if (body.method === 'block') {
+                return {
+                    jsonrpc: '2.0',
+                    id: body.id,
+                    result: {
+                        header: {
+                            height: 1,
+                            hash: "CLo31YCUhzz8ZPtS5vXLFskyZgHV5qWgXinBQHgu9Pyd",
+                        },
+                    },
+                };
+            }
+            throw new Error('Unexpected request: ' + JSON.stringify(body));
+        })
+        .post('/').reply(200, (url, body) => {
+            if (body.method === 'broadcast_tx_commit') {
+                return {
+                    jsonrpc: '2.0',
+                    id: body.id,
+                    result: {
+                        transaction_outcome: {
+                            outcome: {
+                                logs: [],
+                                status: {},
+                                receipt_ids: [],
+                            }
+                        },
+                        receipts_outcome: [],
+                    },
+                };
+            }
+            throw new Error('Unexpected request: ' + JSON.stringify(body));
+        });
+
+    const res = await request
+        .post('/web4/contract/test.near/web4_setStaticUrl')
+        .set('Host', 'test.near.page')
+        .set('Cookie', 'web4_account_id=logged-in.near; web4_private_key=' + keyPair.secretKey)
+        .send({ url: 'test://url' });
+
+    t.equal(res.status, 200);
+    // TODO: Decide what exactly to return
+    t.equal(res.text, '{"transaction_outcome":{"outcome":{"logs":[],"status":{},"receipt_ids":[]}},"receipts_outcome":[]}');
 });
 
 async function setup(t) {

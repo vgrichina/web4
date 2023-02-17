@@ -37,6 +37,7 @@
     "env-cmd": "^10.1.0",
     "fast-near": "^0.4.2",
     "marked": "^3.0.4",
+    "nock": "^13.3.0",
     "nodemon": "^2.0.7",
     "supertest": "^6.3.3",
     "tap-diff": "^0.1.1",
