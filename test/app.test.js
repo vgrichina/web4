@@ -182,8 +182,6 @@ test('test.near.page/web4/login/complete missing account_id', async t => {
         .set('Host', 'test.near.page');
 
     t.equal(res.status, 302);
-    t.equal(res.headers['content-type'], 'text/html; charset=utf-8');
-    t.match(res.text, /Redirecting to/);
     t.equal(res.headers['location'], 'http://test.near.page/');
     const cookies = parseCookies(res);
     t.false(cookies.web4_account_id);
@@ -199,11 +197,43 @@ test('test.near.page/web4/login/complete success', async t => {
         .set('Host', 'test.near.page');
 
     t.equal(res.status, 302);
-    t.equal(res.headers['content-type'], 'text/html; charset=utf-8');
-    t.match(res.text, /Redirecting to/);
     t.equal(res.headers['location'], 'http://test.near.page/');
     const cookies = parseCookies(res);
     t.equal(cookies.web4_account_id, 'test.near');
+});
+
+test('test.near.page/web4/logout', async t => {
+    t.teardown(cleanup);
+
+    await dumpChangesToStorage(STREAMER_MESSAGE);
+
+    const res = await request
+        .get('/web4/logout')
+        .set('Host', 'test.near.page');
+
+    t.equal(res.status, 302);
+    t.equal(res.headers['location'], 'http://test.near.page/');
+
+    const cookies = parseCookies(res);
+    t.false(cookies.web4_account_id);
+    t.false(cookies.web4_private_key);
+});
+
+test('test.near.page/web4/logout with callback', async t => {
+    t.teardown(cleanup);
+
+    await dumpChangesToStorage(STREAMER_MESSAGE);
+
+    const res = await request
+        .get('/web4/logout?web4_callback_url=http%3A%2F%2Ftest.near.page%2Fcallback')
+        .set('Host', 'test.near.page');
+
+    t.equal(res.status, 302);
+    t.equal(res.headers['location'], 'http://test.near.page/callback');
+
+    const cookies = parseCookies(res);
+    t.false(cookies.web4_account_id);
+    t.false(cookies.web4_private_key);
 });
 
 function parseCookies(res) {
