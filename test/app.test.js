@@ -271,7 +271,7 @@ test('/web4/contract/test.near/web4_setStaticUrl method call through wallet', as
     t.equal(Buffer.from(functionCall.args).toString('utf8'), '{"url":"test://url"}');
 });
 
-test.only('/web4/contract/test.near/web4_setStaticUrl method call with key in cookie', async t => {
+test('/web4/contract/test.near/web4_setStaticUrl method call with key in cookie', async t => {
     await setup(t);
 
     const keyPair = KeyPair.fromRandom('ed25519');
