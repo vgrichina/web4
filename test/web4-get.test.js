@@ -73,25 +73,57 @@ const STREAMER_MESSAGE = {
                 codeBase64: TEST_CONTRACT_CODE.toString('base64'),
             }
         }, {
+            type: 'account_update',
+            change: {
+                accountId: 'set-static-url.near',
+                amount: '4936189930936415601114966690',
+                codeHash: bs58.encode(sha256(TEST_CONTRACT_CODE)),
+                locked: '0',
+                storageUsage: 20797,
+            }
+        }, {
+            type: 'contract_code_update',
+            change: {
+                accountId: 'set-static-url.near',
+                codeBase64: TEST_CONTRACT_CODE.toString('base64'),
+            }
+        }, {
             type: 'data_update',
             change: {
-                accountId: 'test.near',
-                keyBase64: Buffer.from('8charkey').toString('base64'),
-                valueBase64: Buffer.from('test-value').toString('base64'),
+                accountId: 'set-static-url.near',
+                keyBase64: Buffer.from('web4:staticUrl').toString('base64'),
+                // NOTE: See web4-littlelink project for source of this IPFS hash. Using littlelink.car from fast-ipfs/test/data
+                valueBase64: Buffer.from('ipfs://bafybeiepywlzwr2yzyin2bo7k2v5oi37lsgleyvfrf6erjvlze2qec6wkm').toString('base64'),
             }
         }]
     }],
 }
 
-test('web4-min /', async t => {
+test('web4-min test.near.page/', async t => {
     t.teardown(cleanup);
 
     await dumpChangesToStorage(STREAMER_MESSAGE);
 
     const res = await request
         .get('/')
-        .set('Host', 'test.near.page')
+        .set('Host', 'test.near.page');
     
     t.equal(res.status, 200);
+    t.equal(res.headers['content-type'], 'text/html; charset=utf-8');
     t.match(res.text, /Welcome to Web4!/);
 });
+
+test('web4-min set-static-url.near.page/css/brands.css (passthrough content type)', async t => {
+    t.teardown(cleanup);
+
+    await dumpChangesToStorage(STREAMER_MESSAGE);
+
+    const res = await request
+        .get('/css/brands.css')
+        .set('Host', 'set-static-url.near.page');
+
+    t.equal(res.status, 200);
+    t.equal(res.headers['content-type'], 'text/css; charset=utf-8');
+    t.match(res.text, /Skeleton V2.0.4/);
+});
+
