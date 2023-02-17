@@ -2,7 +2,7 @@ const test = require('tape');
 const fs = require('fs');
 const bs58 = require('bs58');
 const crypto = require('crypto');
-const { KeyPair } = require('near-api-js');
+const { KeyPair, transactions: { Transaction, SCHEMA } } = require('near-api-js');
 
 process.env.FAST_NEAR_STORAGE_TYPE = 'lmdb';
 
@@ -101,23 +101,19 @@ const STREAMER_MESSAGE = {
 }
 
 test('web4-min test.near.page/', async t => {
-    t.teardown(cleanup);
-
-    await dumpChangesToStorage(STREAMER_MESSAGE);
+    await setup(t);
 
     const res = await request
         .get('/')
         .set('Host', 'test.near.page');
-    
+
     t.equal(res.status, 200);
     t.equal(res.headers['content-type'], 'text/html; charset=utf-8');
     t.match(res.text, /Welcome to Web4!/);
 });
 
 test('web4-min set-static-url.near.page/css/brands.css (passthrough content type)', async t => {
-    t.teardown(cleanup);
-
-    await dumpChangesToStorage(STREAMER_MESSAGE);
+    await setup(t);
 
     const res = await request
         .get('/css/brands.css')
@@ -129,9 +125,7 @@ test('web4-min set-static-url.near.page/css/brands.css (passthrough content type
 });
 
 test('test.near.page/web4/login', async t => {
-    t.teardown(cleanup);
-
-    await dumpChangesToStorage(STREAMER_MESSAGE);
+    await setup(t);
 
     const res = await request
         .get('/web4/login')
@@ -160,9 +154,7 @@ test('test.near.page/web4/login', async t => {
 });
 
 test('test.near.page/web4/login/complete missing callback', async t => {
-    t.teardown(cleanup);
-
-    await dumpChangesToStorage(STREAMER_MESSAGE);
+    await setup(t);
 
     const res = await request
         .get('/web4/login/complete')
@@ -173,9 +165,7 @@ test('test.near.page/web4/login/complete missing callback', async t => {
 });
 
 test('test.near.page/web4/login/complete missing account_id', async t => {
-    t.teardown(cleanup);
-
-    await dumpChangesToStorage(STREAMER_MESSAGE);
+    await setup(t);
 
     const res = await request
         .get('/web4/login/complete?web4_callback_url=http%3A%2F%2Ftest.near.page%2F')
@@ -188,9 +178,7 @@ test('test.near.page/web4/login/complete missing account_id', async t => {
 });
 
 test('test.near.page/web4/login/complete success', async t => {
-    t.teardown(cleanup);
-
-    await dumpChangesToStorage(STREAMER_MESSAGE);
+    await setup(t);
 
     const res = await request
         .get('/web4/login/complete?web4_callback_url=http%3A%2F%2Ftest.near.page%2F&account_id=test.near')
@@ -203,9 +191,7 @@ test('test.near.page/web4/login/complete success', async t => {
 });
 
 test('test.near.page/web4/logout', async t => {
-    t.teardown(cleanup);
-
-    await dumpChangesToStorage(STREAMER_MESSAGE);
+    await setup(t);
 
     const res = await request
         .get('/web4/logout')
@@ -220,9 +206,7 @@ test('test.near.page/web4/logout', async t => {
 });
 
 test('test.near.page/web4/logout with callback', async t => {
-    t.teardown(cleanup);
-
-    await dumpChangesToStorage(STREAMER_MESSAGE);
+    await setup(t);
 
     const res = await request
         .get('/web4/logout?web4_callback_url=http%3A%2F%2Ftest.near.page%2Fcallback')
@@ -235,6 +219,62 @@ test('test.near.page/web4/logout with callback', async t => {
     t.false(cookies.web4_account_id);
     t.false(cookies.web4_private_key);
 });
+
+test('/web4/contract/test.near/web4_get method call', async t => {
+    await setup(t);
+
+    const res = await request
+        .get('/web4/contract/test.near/web4_get');
+
+    t.equal(res.status, 200);
+    t.equal(res.headers['content-type'], 'application/json; charset=utf-8');
+    t.equal(res.text, '{"status":200,"bodyUrl":"ipfs://bafybeidc4lvv4bld66h4rmy2jvgjdrgul5ub5s75vbqrcbjd3jeaqnyd5e/"}');
+});
+
+test('/web4/contract/test.near/web4_get method call with JSON args', async t => {
+    await setup(t);
+
+    const res = await request
+        .get('/web4/contract/test.near/web4_get')
+        .query({ 'request.json': JSON.stringify({ path: '/some-path' }) });
+
+    t.equal(res.status, 200);
+    t.equal(res.headers['content-type'], 'application/json; charset=utf-8');
+    t.equal(res.text, '{"status":200,"bodyUrl":"ipfs://bafybeidc4lvv4bld66h4rmy2jvgjdrgul5ub5s75vbqrcbjd3jeaqnyd5e/some-path"}');
+});
+
+test('/web4/contract/test.near/web4_setStaticUrl method call through wallet', async t => {
+    await setup(t);
+
+    const res = await request
+        .post('/web4/contract/test.near/web4_setStaticUrl')
+        .set('Host', 'test.near.page')
+        .set('Cookie', 'web4_account_id=logged-in.near')
+        .send({ url: 'test://url' });
+
+    t.equal(res.status, 302);
+    const { location } = res.headers;
+    t.match(location, /https:\/\/wallet.testnet.near.org\/sign\/?/);
+    const { searchParams } = new URL(location);
+    console.log('callbackUrl', searchParams.get('callbackUrl'));
+    t.equal(searchParams.get('callbackUrl'), 'http://test.near.page/');
+    const transactionBase64 = searchParams.get('transactions');
+    t.ok(transactionBase64);
+    const transactionData = Buffer.from(transactionBase64, 'base64');
+    const transaction = Transaction.decode(transactionData);
+    t.ok(transaction.actions);
+    t.equal(transaction.receiverId, 'test.near');
+    t.equal(transaction.signerId, 'logged-in.near');
+    t.equal(transaction.actions.length, 1);
+    const { functionCall } = transaction.actions[0];
+    t.equal(functionCall.methodName, 'web4_setStaticUrl');
+    t.equal(Buffer.from(functionCall.args).toString('utf8'), '{"url":"test://url"}');
+});
+
+async function setup(t) {
+    t.teardown(cleanup);
+    await dumpChangesToStorage(STREAMER_MESSAGE);
+}
 
 function parseCookies(res) {
     const cookies = {};
