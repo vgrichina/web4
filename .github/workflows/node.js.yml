@@ -27,6 +27,12 @@ jobs:
         cache: 'yarn'
     - run: yarn config set script-shell /bin/bash
     - run: yarn
-    - run: yarn test
     - run: cd contract && yarn
-    - run: yarn build:contract:debug
+    - name: Unit tests coverage
+      run: npx nyc --reporter=lcov yarn test
+    - name: Report code coverage
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build contract
+      run: yarn build:contract:debug
