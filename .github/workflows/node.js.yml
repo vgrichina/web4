@@ -29,7 +29,7 @@ jobs:
     - run: yarn
     - run: cd contract && yarn
     - name: Unit tests coverage
-      run: npx nyc --reporter=lcov yarn test
+      run: npx nyc --reporter=lcov yarn test:all
     - name: Report code coverage
       uses: coverallsapp/github-action@master
       with:

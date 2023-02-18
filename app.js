@@ -284,8 +284,8 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
             // Support hosting web4 contract on subaccount like web4.vlad.near
             // TODO: Cache whether given account needs this
             // TODO: remove nearcore error check after full migration to fast-near
-            if (e.message.includes('FunctionCallError(CompilationError(CodeDoesNotExist')
-                || e.message.includes('FunctionCallError(MethodResolveError(MethodNotFound))')
+            if (e.message.includes('CompilationError(CodeDoesNotExist')
+                || e.message.includes('MethodResolveError(MethodNotFound')
                 || e.message.startsWith('codeNotFound')
                 || e.message.includes('method web4_get not found')) {
 
