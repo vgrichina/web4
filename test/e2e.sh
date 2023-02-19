@@ -14,3 +14,4 @@ sleep 1
 curl --fail-with-body http://localhost:3000/ -H 'Host: web4.near.page'
 curl --fail-with-body http://localhost:3000/ -H 'Host: vlad.near.page'
 curl --fail-with-body http://localhost:3000/ -H 'Host: lands.near.page'
+curl --fail-with-body http://localhost:3000/ -H 'Host: new.humanguild.io'
