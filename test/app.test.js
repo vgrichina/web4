@@ -16,7 +16,6 @@ const TEST_FAST_NEAR_PORT = 13000; // TODO: Pick open port
 const fastNEAR = require('fast-near');
 const fastNEARServer = fastNEAR.listen(TEST_FAST_NEAR_PORT);
 process.env.FAST_NEAR_URL = `http://localhost:${TEST_FAST_NEAR_PORT}`;
-process.env.NEARFS_GATEWAY_URL = 'https://ipfs.web4.near.page';
 
 const { closeWorkerPool } = require('fast-near/run-contract');
 test.onFinish(async () => {
