@@ -34,6 +34,7 @@ Every smart contract on NEAR also gets corresponding API endpoint which can be a
 - https://zavodil.near.page
 - https://psalomo.near.page
 - https://oracle-prices.near.page
+- https://orangejoe.near.page
 - https://orderly.near.page
 - https://theegg.near.page
 - https://twelvetone.near.page
