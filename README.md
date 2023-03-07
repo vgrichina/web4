@@ -138,7 +138,7 @@ After data is preloaded `web4_get` gets called again with loaded data injected i
 
 You can post transaction by making a POST request to corresponding URL.
 
-E.g contract above preloads has form that gets posted to `/web4/contract/guest-book.testnet/addMessage` URL. This URL submits transacion which calls `addMessage` method on `guest-book.testnet` contract.
+E.g contract above preloads has form that gets posted to `/web4/contract/guest-book.testnet/addMessage` URL. This URL submits transaction which calls `addMessage` method on `guest-book.testnet` contract.
 
 Note that both JSON and form data are supported. When transaction is processed by server user gets redirected to wallet for signing this transaction.
 
@@ -151,7 +151,7 @@ All images, videos, audio and CSS can be cached for 1 day (assumed static conten
 
 You can override this by setting `cacheControl` field in response.
 
-It's not recommened to cache content for too long as then it not going to be hot on IPFS gateway.
+It's not recommended to cache content for too long as then it not going to be hot on IPFS gateway.
 
 ## Rust support
 
