@@ -316,6 +316,9 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
         if (body) {
             ctx.type = contentType
             ctx.body = Buffer.from(body, 'base64');
+            if (cacheControl) {
+                ctx.set('cache-control', cacheControl);
+            }
             return;
         }
 
