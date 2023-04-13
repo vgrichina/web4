@@ -62,7 +62,7 @@ const app = new Koa();
 const Router = require('koa-router');
 const router = new Router();
 
-const koaBody = require('koa-body')();
+const getRawBody = require('raw-body');
 
 const FAST_NEAR_URL = process.env.FAST_NEAR_URL;
 
@@ -148,7 +148,7 @@ router.get('/web4/logout', async ctx => {
 
 const DEFAULT_GAS = '300' + '000000000000';
 
-router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAccountId, requireAccountId, async ctx => {
+router.post('/web4/contract/:contractId/:methodName', withNear, withAccountId, requireAccountId, async ctx => {
     // TODO: Accept both json and form submission
 
     const { accountId, debug } = ctx;
@@ -156,14 +156,32 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAcc
     const appPrivateKey = ctx.cookies.get('web4_private_key');
 
     const { contractId, methodName } = ctx.params;
-    const { body } = ctx.request;
-    const { web4_gas: gas, web4_deposit: deposit, web4_callback_url } = body;
-    const args = Object.keys(body)
-        .filter(key => !key.startsWith('web4_'))
-        .map(key => ({ [key]: body[key] }))
-        .reduce((a, b) => ({...a, ...b}), {});
 
-    const callbackUrl = new URL(web4_callback_url || ctx.get('referrer') || '/', ctx.origin).toString()
+    const rawBody = await getRawBody(ctx.req);
+    let gas = DEFAULT_GAS;
+    let deposit = '0';
+    let callbackUrl;
+    if (ctx.request.type == 'application/x-www-form-urlencoded') {
+        const body = qs.parse(rawBody.toString('utf8'));
+        args = Object.keys(body)
+            .filter(key => !key.startsWith('web4_'))
+            .map(key => ({ [key]: body[key] }))
+            .reduce((a, b) => ({...a, ...b}), {});
+        // TODO: Allow to pass web4_ stuff in headers as well
+        if (body.web4_gas) {
+            gas = body.web4_gas;
+        }
+        if (body.web4_deposit) {
+            deposit = body.web4_deposit;
+        }
+        if (body.web4_callback_url) {
+            callbackUrl = body.web4_callback_url;
+        }
+    } else {
+        args = rawBody;
+    }
+
+    callbackUrl = new URL(callbackUrl || ctx.get('referrer') || '/', ctx.origin).toString()
     debug('callbackUrl', callbackUrl);
 
     // Check if can be signed without wallet
@@ -185,7 +203,7 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAcc
         if (FunctionCall && FunctionCall.receiver_id == contractId) {
             debug('Access key found');
             const account = await near.account(accountId);
-            const result = await account.functionCall({ contractId, methodName, args, gas: gas || DEFAULT_GAS, deposit: deposit || '0' });
+            const result = await account.functionCall({ contractId, methodName, args, gas, deposit });
             debug('Result', result);
             // TODO: when used from fetch, etc shouldn't really redirect. Judge based on Accepts header?
             if (ctx.request.type == 'application/x-www-form-urlencoded') {
@@ -206,7 +224,7 @@ router.post('/web4/contract/:contractId/:methodName', koaBody, withNear, withAcc
         nonce: 0,
         receiverId: contractId,
         actions: [
-            functionCall(methodName, args, gas || DEFAULT_GAS, deposit || '0')
+            functionCall(methodName, args, gas, deposit)
         ],
         blockHash: Buffer.from(new Array(32))
     });
