@@ -3,7 +3,7 @@ const fs = require('fs');
 const bs58 = require('bs58');
 const crypto = require('crypto');
 const nock = require('nock');
-const { KeyPair, transactions: { Transaction, SCHEMA } } = require('near-api-js');
+const { KeyPair, transactions: { SignedTransaction, Transaction } } = require('near-api-js');
 
 process.env.FAST_NEAR_STORAGE_TYPE = 'lmdb';
 
@@ -270,11 +270,7 @@ test('/web4/contract/test.near/web4_setStaticUrl method call through wallet', as
     t.equal(Buffer.from(functionCall.args).toString('utf8'), '{"url":"test://url"}');
 });
 
-test('/web4/contract/test.near/web4_setStaticUrl method call with key in cookie', async t => {
-    await setup(t);
-
-    const keyPair = KeyPair.fromRandom('ed25519');
-
+function mockTransactionSuccess(receiverId, methodName, callback) {
     nock('https://rpc.testnet.near.org')
         .post('/')
         .times(2)
@@ -287,8 +283,8 @@ test('/web4/contract/test.near/web4_setStaticUrl method call with key in cookie'
                         block_height: 1,
                         permission: {
                             FunctionCall: {
-                                receiver_id: 'test.near',
-                                method_names: ['web4_setStaticUrl'],
+                                receiver_id: receiverId,
+                                method_names: [methodName],
                             }
                         }
                     },
@@ -313,6 +309,14 @@ test('/web4/contract/test.near/web4_setStaticUrl method call with key in cookie'
         })
         .post('/').reply(200, (url, body) => {
             if (body.method === 'broadcast_tx_commit') {
+                let transaction;
+                try {
+                    transaction = SignedTransaction.decode(Buffer.from(body.params[0], 'base64'));
+                } catch (e) {
+                    callback && callback(null);
+                    throw e;
+                }
+                callback && callback(transaction);
                 return {
                     jsonrpc: '2.0',
                     id: body.id,
@@ -330,7 +334,14 @@ test('/web4/contract/test.near/web4_setStaticUrl method call with key in cookie'
             }
             throw new Error('Unexpected request: ' + JSON.stringify(body));
         });
+}
 
+test('/web4/contract/test.near/web4_setStaticUrl method call with key in cookie', async t => {
+    await setup(t);
+
+    mockTransactionSuccess('test.near', 'web4_setStaticUrl');
+
+    const keyPair = KeyPair.fromRandom('ed25519');
     const res = await request
         .post('/web4/contract/test.near/web4_setStaticUrl')
         .set('Host', 'test.near.page')
@@ -340,6 +351,49 @@ test('/web4/contract/test.near/web4_setStaticUrl method call with key in cookie'
     t.equal(res.status, 200);
     // TODO: Decide what exactly to return
     t.equal(res.text, '{"transaction_outcome":{"outcome":{"logs":[],"status":{},"receipt_ids":[]}},"receipts_outcome":[]}');
+});
+
+test('/web4/contract/test.near/setNestedObject method call with nested object in form data', async t => {
+    await setup(t);
+
+    let transaction;
+    mockTransactionSuccess('test.near', 'setNestedObject', signedTransaction => {
+        // TODO: Check signature, etc? Do it in mockTransactionSuccess?
+        ({ transaction } = signedTransaction);
+    });
+
+    const keyPair = KeyPair.fromRandom('ed25519');
+    const res = await request
+        .post('/web4/contract/test.near/setNestedObject')
+        .set('Host', 'test.near.page')
+        .set('Cookie', 'web4_account_id=logged-in.near; web4_private_key=' + keyPair.secretKey)
+        .send('nested.object.value=42')
+        .send('nested.object.items[1].idx=1')
+        .send('nested.object.items[3].idx=3')
+        .send('topLevel=foo');
+
+    t.equal(res.status, 302);
+    t.equal(res.text, 'Redirecting to <a href="http://test.near.page/">http://test.near.page/</a>.');
+
+    t.ok(transaction);
+    t.equal(transaction.receiverId, 'test.near');
+    t.equal(transaction.signerId, 'logged-in.near');
+    t.equal(transaction.actions.length, 1);
+    const { functionCall } = transaction.actions[0];
+    t.equal(functionCall.methodName, 'setNestedObject');
+    const args = JSON.parse(Buffer.from(functionCall.args).toString('utf8'));
+    t.deepEqual(args, {
+        nested: {
+            object: {
+                value: '42',
+                items: [
+                    { idx: '1' },
+                    { idx: '3' },
+                ],
+            },
+        },
+        topLevel: 'foo',
+    });
 });
 
 async function setup(t) {
