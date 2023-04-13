@@ -33,6 +33,7 @@
     "koa-router": "^10.0.0",
     "near-api-js": "^0.43.1",
     "node-fetch": "^2.6.1",
+    "qs": "^6.11.1",
     "raw-body": "^2.5.2"
   },
   "devDependencies": {

@@ -8,7 +8,7 @@ const { PublicKey } = require('near-api-js/lib/utils');
 const { signInURL, signTransactionsURL } = require('./util/web-wallet-api');
 
 const fetch = require('node-fetch');
-const qs = require('querystring');
+const qs = require('qs');
 
 const MAX_PRELOAD_HOPS = 5;
 const IPFS_GATEWAY_URL = process.env.IPFS_GATEWAY_URL || 'https://cloudflare-ipfs.com';
@@ -162,7 +162,7 @@ router.post('/web4/contract/:contractId/:methodName', withNear, withAccountId, r
     let deposit = '0';
     let callbackUrl;
     if (ctx.request.type == 'application/x-www-form-urlencoded') {
-        const body = qs.parse(rawBody.toString('utf8'));
+        const body = qs.parse(rawBody.toString('utf8'), { allowDots: true });
         args = Object.keys(body)
             .filter(key => !key.startsWith('web4_'))
             .map(key => ({ [key]: body[key] }))
