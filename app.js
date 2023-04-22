@@ -368,8 +368,10 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
             if (!status) {
                 ctx.status = res.status;
             }
+            debug('status', ctx.status);
 
             const needToUncompress = !!res.headers.get('content-encoding');
+            debug('needToUncompress', needToUncompress);
             for (let [key, value] of res.headers.entries()) {
                 if (needToUncompress && ['content-encoding', 'content-length'].includes(key)) {
                     // NOTE: fetch returns Gunzip stream, so response doesn't get compressed + content length is off
@@ -399,6 +401,7 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
                     ctx.set('cache-control', 'public, max-age=60'); // 1 minute
                 }
             }
+            debug('ctx.type', ctx.type);
             ctx.body = res.body;
             return;
         }
