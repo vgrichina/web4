@@ -252,16 +252,19 @@ async function withContractId(ctx, next) {
     let contractId = contractFromHost(ctx.host);
 
     if (!contractId) {
-        // Try to resolve custom domain CNAME record
-        try {
-            const addresses = await dns.resolveCname(ctx.host);
-            const address = addresses.find(contractFromHost);
-            if (address) {
-                contractId = contractFromHost(address);
+        for (let host of [ctx.host, `www.${ctx.host}`]) {
+            // Try to resolve custom domain CNAME record
+            try {
+                const addresses = await dns.resolveCname(host);
+                const address = addresses.find(contractFromHost);
+                if (address) {
+                    contractId = contractFromHost(address);
+                    break;
+                }
+            } catch (e) {
+                console.log('Error resolving CNAME', ctx.host, e);
+                // Ignore
             }
-        } catch (e) {
-            console.log('Error resolving CNAME', ctx.host, e);
-            // Ignore
         }
     }
 
