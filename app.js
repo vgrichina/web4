@@ -11,8 +11,8 @@ const fetch = require('node-fetch');
 const qs = require('qs');
 
 const MAX_PRELOAD_HOPS = 5;
-const IPFS_GATEWAY_URL = process.env.IPFS_GATEWAY_URL || 'https://cloudflare-ipfs.com';
-const NEARFS_GATEWAY_URL = process.env.NEARFS_GATEWAY_URL || 'https://ipfs.web4.near.page';
+const IPFS_GATEWAY_URL = (process.env.IPFS_GATEWAY_URL || 'https://cloudflare-ipfs.com').trim();
+const NEARFS_GATEWAY_URL = (process.env.NEARFS_GATEWAY_URL || 'https://ipfs.web4.near.page').trim();
 
 const config = require('./config')(process.env.NODE_ENV || 'development')
 
