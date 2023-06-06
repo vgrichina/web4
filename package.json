@@ -2,6 +2,7 @@
   "name": "web4-near",
   "version": "0.5.0",
   "description": "Web3 using plain HTTP",
+  "keywords": ["rust", "assemblyscript", "permaweb", "ipfs", "blockchain", "web3", "web4", "nearprotocol"],
   "bin": {
     "web4": "bin/web4"
   },
