@@ -94,3 +94,38 @@ server {
         return 200 'OK';
     }
 }
+
+server {
+    listen 80;
+    server_name ipfs.web4.testnet.page;
+
+    location /ipfs {
+        # TODO: Set expires based on content type like https://gist.github.com/bkawk/1d7ecc97e3be3cd04e8e173483d82e1a?
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+        proxy_pass http://nearfs-testnet:10000;
+
+        # IPFS gateway can pause for a long time before response, it's better to fail in that case
+        proxy_read_timeout 5s;
+        # Lock is on to avoid bombarding IPFS gateway with same request when content not available yet
+        #proxy_cache_lock on;
+
+        proxy_cache small;
+        proxy_cache_key "$host|$request_uri";
+        proxy_buffers 8 32k;
+        proxy_buffer_size 64k;
+        proxy_cache_valid 200 1m; # TODO: Tune cache validity time, should it expire at all?
+        proxy_cache_background_update on;
+        proxy_cache_use_stale error timeout invalid_header updating http_500 http_502 http_503 http_504;
+        add_header X-Cached $upstream_cache_status;
+    }
+
+    location /healthz {
+        add_header Content-Type text/plain;
+        return 200 'OK';
+    }
+}
