@@ -100,26 +100,28 @@ router.get('/web4/contract/:contractId/:methodName', withNear, async ctx => {
     ctx.body = await callViewFunction(ctx, contractId, methodName, methodParams);
 });
 
+const fs = require('fs/promises');
+
 router.get('/web4/login', withNear, withContractId, async ctx => {
     let {
         contractId,
         query: { web4_callback_url, web4_contract_id }
     } = ctx;
 
-    const keyPair = KeyPair.fromRandom('ed25519');
-    ctx.cookies.set('web4_private_key', keyPair.toString(), { httpOnly: false });
-    ctx.cookies.set('web4_account_id', null, { httpOnly: false });
-
     const callbackUrl = new URL(web4_callback_url || ctx.get('referrer') || '/', ctx.origin).toString();
 
     const loginCompleteUrl = `${ctx.origin}/web4/login/complete?${qs.stringify({ web4_callback_url: callbackUrl })}`;
-    ctx.redirect(signInURL({
-        walletUrl: config.walletUrl,
-        contractId: web4_contract_id || contractId,
-        publicKey: keyPair.getPublicKey().toString(),
-        successUrl: loginCompleteUrl,
-        failureUrl: loginCompleteUrl
-    }));
+
+    ctx.type = 'text/html';
+    // TODO: Less hacky templating
+    ctx.body = (await fs.readFile(`${__dirname}/login/login.html`, 'utf8'))
+        .replace('$CONTRACT_ID$', JSON.stringify(web4_contract_id || contractId))
+        .replace('$CALLBACK_URL$', JSON.stringify(loginCompleteUrl));
+});
+
+router.get('/web4/login.js', async ctx => {
+    ctx.type = 'text/javascript';
+    ctx.body = await fs.readFile(`${__dirname}/dist/login.js`);
 });
 
 router.get('/web4/login/complete', async ctx => {

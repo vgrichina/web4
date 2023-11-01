@@ -1,0 +1,15 @@
+<script type="text/javascript">
+    // TODO: Populate contract ID server side
+    const CONTRACT_ID = $CONTRACT_ID$;
+    const CALLBACK_URL = $CALLBACK_URL$;
+</script>
+
+<script src="./login.js" type="text/javascript"></script>
+
+<body>
+    <h1>Login using wallet</h1>
+    <ul>
+        <li><a href="#" onclick="signInHereWallet({ contractId: CONTRACT_ID })">HERE Wallet</a></li>
+        <li><a href="#" onclick="signInNEARWallet({ contractId: CONTRACT_ID, walletUrl: 'https://wallet.near.org' })">NEAR Wallet</a></li>
+    </ul>
+</body>
