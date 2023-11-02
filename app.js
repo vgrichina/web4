@@ -63,14 +63,14 @@ const getRawBody = require('raw-body');
 
 const FAST_NEAR_URL = process.env.FAST_NEAR_URL;
 
-const callViewFunction = async ({ near }, contractId, methodName, methodParams) => {
+const callViewFunction = async ({ near }, contractId, methodName, args) => {
     if (FAST_NEAR_URL) {
         const res = await fetch(`${FAST_NEAR_URL}/account/${contractId}/view/${methodName}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(methodParams)
+            body: JSON.stringify(args)
         });
         if (!res.ok) {
             throw new Error(await res.text());
@@ -79,7 +79,7 @@ const callViewFunction = async ({ near }, contractId, methodName, methodParams) 
     }
 
     const account = await near.account(contractId);
-    return await account.viewFunction(contractId, methodName, methodParams);
+    return await account.viewFunction({ contractId, methodName, args });
 }
 
 router.get('/web4/contract/:contractId/:methodName', withNear, async ctx => {
