@@ -6,17 +6,13 @@ import { signInURL } from "../util/web-wallet-api";
 
 async function signInHereWallet({ contractId }) {
     const here = new HereWallet()
-    try {
-        const accountId = await here.signIn({ contractId });
-        console.log(`Hello ${accountId}!`);
-        Cookies.set('web4_account_id', accountId);
-        Cookies.set('web4_private_key', (await here.authStorage.getKey(here.connection.networkId, accountId)).toString());
+    const accountId = await here.signIn({ contractId });
+    console.log(`Hello ${accountId}!`);
+    Cookies.set('web4_account_id', accountId);
+    Cookies.set('web4_private_key', (await here.authStorage.getKey(here.connection.networkId, accountId)).toString());
 
-        // NOTE: CALLBACK_URL set in login.html
-        window.location.href = CALLBACK_URL;
-    } catch (e) {
-        console.error(e);
-    }
+    // NOTE: CALLBACK_URL set in login.html
+    window.location.href = CALLBACK_URL;
 }
 
 async function signInNEARWallet({
