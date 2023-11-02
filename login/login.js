@@ -6,20 +6,20 @@ import { BrowserLocalStorageKeyStore } from 'near-api-js/lib/key_stores';
 
 import { signInURL } from "../util/web-wallet-api";
 
-async function signInHereWallet({ contractId }) {
+async function signInHereWallet({ contractId, callbackUrl }) {
     const here = new HereWallet()
     const accountId = await here.signIn({ contractId });
     console.log(`Hello ${accountId}!`);
     Cookies.set('web4_account_id', accountId);
     Cookies.set('web4_private_key', (await here.authStorage.getKey(here.connection.networkId, accountId)).toString());
 
-    // NOTE: CALLBACK_URL set in login.html
-    window.location.href = CALLBACK_URL;
+    window.location.href = callbackUrl;
 }
 
 async function signInNEARWallet({
-    walletUrl,
-    contractId
+    walletUrl = 'https://wallet.near.org',
+    contractId,
+    callbackUrl
 }) {
     const keyPair = KeyPair.fromRandom('ed25519');
     Cookies.set('web4_account_id');
@@ -29,12 +29,12 @@ async function signInNEARWallet({
         walletUrl,
         contractId,
         publicKey: keyPair.getPublicKey().toString(),
-        successUrl: CALLBACK_URL,
-        failureUrl: CALLBACK_URL
+        successUrl: callbackUrl,
+        failureUrl: callbackUrl
     });
 }
 
-async function signInMeteorWallet({ contractId }) {
+async function signInMeteorWallet({ contractId, callbackUrl }) {
     const keyPair = KeyPair.fromRandom('ed25519');
     Cookies.set('web4_account_id');
     Cookies.set('web4_private_key', keyPair.toString());
@@ -65,10 +65,24 @@ async function signInMeteorWallet({ contractId }) {
     Cookies.set('web4_account_id', accountId);
     Cookies.set('web4_private_key', keyPair.toString());
 
-    // NOTE: CALLBACK_URL set in login.html
-    window.location.href = CALLBACK_URL;
+    window.location.href = callbackUrl;
 }
 
-window.signInHereWallet = signInHereWallet;
-window.signInNEARWallet = signInNEARWallet;
-window.signInMeteorWallet = signInMeteorWallet;
+window.wallets = {
+    here: {
+        signIn: signInHereWallet,
+        name: 'HERE Wallet'
+    },
+    near: {
+        signIn: signInNEARWallet,
+        name: 'NEAR Wallet'
+    },
+    mynearwallet: {
+        signIn: ({ contractId }) => signInNEARWallet({ contractId, walletUrl: 'https://app.mynearwallet.com' }),
+        name: 'MyNearWallet'
+    },
+    meteor: {
+        signIn: signInMeteorWallet,
+        name: 'Meteor Wallet'
+    }
+};
