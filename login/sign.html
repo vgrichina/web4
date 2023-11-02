@@ -1,0 +1,28 @@
+<script type="text/javascript">
+    const CONTRACT_ID = $CONTRACT_ID$;
+    const METHOD_NAME = $METHOD_NAME$;
+    const ARGS = $ARGS$;
+    const GAS = $GAS$;
+    const DEPOSIT = $DEPOSIT$;
+    const CALLBACK_URL = $CALLBACK_URL$;
+</script>
+
+<script src="./login.js" type="text/javascript"></script>
+
+<body>
+    <h1>Sign using wallet</h1>
+</body>
+
+<script type="text/javascript">
+    window.wallets[localStorage.getItem('web4_wallet')]
+        .sendTransaction(window.createTransactionRequest({
+                contractId: CONTRACT_ID,
+                methodName: METHOD_NAME,
+                argsBase64: ARGS,
+                gas: GAS,
+                deposit: DEPOSIT,
+                callbackUrl: CALLBACK_URL
+        }))
+        // TODO: More robust error handling
+        .catch(console.error);
+</script>
