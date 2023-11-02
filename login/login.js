@@ -18,6 +18,45 @@ async function signInHereWallet({ contractId, callbackUrl }) {
     window.location.href = callbackUrl;
 }
 
+async function sendTransactionHereWallet({
+    receiverId,
+    actions,
+    callbackUrl
+}) {
+    const here = new HereWallet()
+    const signerId = Cookies.get('web4_account_id');
+    try {
+        await here.signAndSendTransaction({
+            signerId,
+            receiverId,
+            actions: actions.map(({ functionCall, ...action }) => {
+                if (!functionCall) {
+                    console.error('Cannot convert action', action);
+                    throw new Error('Only functionCall actions are supported');
+                }
+
+                return {
+                    type: "FunctionCall",
+                    params: {
+                        methodName: functionCall.methodName,
+                        args: functionCall.args,
+                        gas: functionCall.gas.toString(),
+                        deposit: functionCall.deposit.toString(),
+                    }
+                };
+            })
+        });
+    } catch (e) {
+        console.error(e);
+        throw e;
+    }
+    console.log('Transaction sent');
+
+    // TODO: Check response above?
+
+    window.location.href = callbackUrl;
+}
+
 async function signInNEARWallet({
     walletUrl = 'https://wallet.near.org',
     contractId,
@@ -142,6 +181,7 @@ function createTransactionRequest({
 window.wallets = {
     here: {
         signIn: signInHereWallet,
+        sendTransaction: sendTransactionHereWallet,
         name: 'HERE Wallet'
     },
     near: {
