@@ -12,10 +12,15 @@
 </body>
 
 <script type="text/javascript">
+    async function signIn(key) {
+        localStorage.setItem('web4_wallet', key);
+        await window.wallets[key].signIn({ contractId: CONTRACT_ID, callbackUrl: CALLBACK_URL });
+    }
+
     document.querySelector('.wallet-list').innerHTML = 
         Object.keys(window.wallets)
             .map(key => {
                 const { name } = window.wallets[key];
-               return `<li><a href="#" onclick="wallets.${key}.signIn({ contractId: CONTRACT_ID, callbackUrl: CALLBACK_URL })">${name}</a></li>`;
-            }).join('');
+                return `<li><a href="#" onclick='signIn(${JSON.stringify(key)})'>${name}</a></li>`;
+            }).join('\n');
 </script>
