@@ -1,5 +1,4 @@
 <script type="text/javascript">
-    // TODO: Populate contract ID server side
     const CONTRACT_ID = $CONTRACT_ID$;
     const CALLBACK_URL = $CALLBACK_URL$;
 </script>
@@ -12,5 +11,6 @@
         <li><a href="#" onclick="signInHereWallet({ contractId: CONTRACT_ID })">HERE Wallet</a></li>
         <li><a href="#" onclick="signInNEARWallet({ contractId: CONTRACT_ID, walletUrl: 'https://wallet.near.org' })">NEAR Wallet</a></li>
         <li><a href="#" onclick="signInNEARWallet({ contractId: CONTRACT_ID, walletUrl: 'https://app.mynearwallet.com' })">MyNearWallet</a></li>
+        <li><a href="#" onclick="signInMeteorWallet({ contractId: CONTRACT_ID })">Meteor Wallet</a></li>
     </ul>
 </body>

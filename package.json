@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "@here-wallet/core": "^1.5.1",
+    "@meteorwallet/sdk": "^0.8.0",
     "env-cmd": "^10.1.0",
     "fast-near": "^0.4.2",
     "js-cookie": "^3.0.5",
