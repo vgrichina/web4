@@ -254,21 +254,42 @@ test('/web4/contract/test.near/web4_setStaticUrl method call through wallet', as
 
     t.equal(res.status, 302);
     const { location } = res.headers;
-    t.match(location, /https:\/\/wallet.testnet.near.org\/sign\/?/);
-    const { searchParams } = new URL(location);
-    t.equal(searchParams.get('callbackUrl'), 'http://test.near.page/');
-    const transactionBase64 = searchParams.get('transactions');
-    t.ok(transactionBase64);
-    const transactionData = Buffer.from(transactionBase64, 'base64');
-    const transaction = Transaction.decode(transactionData);
-    t.ok(transaction.actions);
-    t.equal(transaction.receiverId, 'test.near');
-    t.equal(transaction.signerId, 'logged-in.near');
-    t.equal(transaction.actions.length, 1);
-    const { functionCall } = transaction.actions[0];
-    t.equal(functionCall.methodName, 'web4_setStaticUrl');
-    t.equal(Buffer.from(functionCall.args).toString('utf8'), '{"url":"test://url"}');
+    t.match(location, /\/web4\/sign\/?/);
+    const { searchParams } = new URL(location, 'http://test.near.page/');
+    t.equal(searchParams.get('web4_callback_url'), 'http://test.near.page/');
+    t.equal(searchParams.get('web4_contract_id'), 'test.near');
+    t.equal(searchParams.get('web4_method_name'), 'web4_setStaticUrl');
+    t.equal(searchParams.get('web4_args'), Buffer.from('{"url":"test://url"}').toString('base64'));
+    t.equal(searchParams.get('web4_gas'), '300000000000000');
+    t.equal(searchParams.get('web4_deposit'), '0');
 });
+
+test('/web4/sign', async t => {
+    await setup(t);
+
+    const res = await request
+        .get('/web4/sign')
+        .query({
+            web4_callback_url: 'http://test.near.page/',
+            web4_contract_id: 'test.near',
+            web4_method_name: 'web4_setStaticUrl',
+            web4_args: Buffer.from('{"url":"test://url"}').toString('base64'),
+            web4_gas: '300000000000000',
+            web4_deposit: '0',
+        })
+        .set('Host', 'test.near.page')
+        .set('Cookie', 'web4_account_id=logged-in.near');
+
+    t.equal(res.status, 200);
+    t.match(res.text, /const CONTRACT_ID = "test.near";/);
+    t.match(res.text, /const METHOD_NAME = "web4_setStaticUrl";/);
+    const EXPECTED_ARGS_BASE64 = Buffer.from('{"url":"test://url"}').toString('base64');
+    t.match(res.text, new RegExp(`const ARGS = "${EXPECTED_ARGS_BASE64}";`));
+    t.match(res.text, /const GAS = "300000000000000";/);
+    t.match(res.text, /const DEPOSIT = "0";/);
+    t.match(res.text, /const CALLBACK_URL = "http:\/\/test.near.page\/";/);
+});
+
 
 function mockTransactionSuccess(receiverId, methodName, callback) {
     nock('https://rpc.testnet.near.org')
