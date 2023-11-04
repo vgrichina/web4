@@ -8,6 +8,11 @@ const { PublicKey } = require('near-api-js/lib/utils');
 
 import { signInURL, signTransactionsURL } from "../util/web-wallet-api";
 
+import hereIcon from './icons/here';
+import nearIcon from './icons/near';
+import myNearIcon from './icons/my-near';
+import meteorIcon from './icons/meteor';
+
 async function signInHereWallet({ contractId, callbackUrl }) {
     const here = new HereWallet()
     const accountId = await here.signIn({ contractId });
@@ -182,22 +187,26 @@ window.wallets = {
     here: {
         signIn: signInHereWallet,
         sendTransaction: sendTransactionHereWallet,
-        name: 'HERE Wallet'
+        name: 'HERE Wallet',
+        iconUrl: hereIcon
     },
     near: {
         signIn: signInNEARWallet,
         sendTransaction: sendTransactionNEARWallet,
-        name: 'NEAR Wallet'
+        name: 'NEAR Wallet',
+        iconUrl: nearIcon
     },
     mynearwallet: {
         signIn: ({ ...args }) => signInNEARWallet({ ...args, walletUrl: 'https://app.mynearwallet.com' }),
         sendTransaction: sendTransactionNEARWallet,
-        name: 'MyNearWallet'
+        name: 'MyNearWallet',
+        iconUrl: myNearIcon
     },
     meteor: {
         signIn: signInMeteorWallet,
         sendTransaction: sendTransactionMeteorWallet,
-        name: 'Meteor Wallet'
+        name: 'Meteor Wallet',
+        iconUrl: meteorIcon
     }
 };
 
