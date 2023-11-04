@@ -131,26 +131,11 @@ test('test.near.page/web4/login', async t => {
         .get('/web4/login')
         .set('Host', 'test.near.page');
 
-    t.equal(res.status, 302);
+    t.equal(res.status, 200);
     t.equal(res.headers['content-type'], 'text/html; charset=utf-8');
-    t.match(res.text, /Redirecting to/);
-    const location = res.headers['location'];
-    t.match(location, /https:\/\/wallet.testnet.near.org\/login\/?/);
 
-    const searchParams = new URL(location).searchParams;
-    const callbackUrl = 'http://test.near.page/web4/login/complete?web4_callback_url=http%3A%2F%2Ftest.near.page%2F';
-    t.equal(searchParams.get('success_url'), callbackUrl);
-    t.equal(searchParams.get('failure_url'), callbackUrl);
-    t.equal(searchParams.get('contract_id'), 'test.near');
-    const publicKey = searchParams.get('public_key');
-    t.match(publicKey, /^ed25519:/);
-
-    const cookies = parseCookies(res);
-    t.equal(cookies.web4_account_id, '');
-    t.ok(cookies.web4_private_key);
-
-    const keyPair = KeyPair.fromString(cookies.web4_private_key);
-    t.equal(publicKey, keyPair.getPublicKey().toString());
+    t.match(res.text, /const CONTRACT_ID = "test.near";/);
+    t.match(res.text, /const CALLBACK_URL = "http:\/\/test.near.page\/web4\/login\/complete\?web4_callback_url=http%3A%2F%2Ftest.near.page%2F";/);
 });
 
 test('test.near.page/web4/login/complete missing callback', async t => {
