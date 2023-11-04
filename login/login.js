@@ -143,7 +143,6 @@ async function signInMeteorWallet({ contractId, callbackUrl }) {
     }
 
     Cookies.set('web4_account_id', accountId);
-    Cookies.set('web4_private_key', keyPair.toString());
 
     window.location.href = callbackUrl;
 }
