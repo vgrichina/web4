@@ -116,12 +116,10 @@ router.get('/web4/login', withNear, withContractId, async ctx => {
 
     const callbackUrl = new URL(web4_callback_url || ctx.get('referrer') || '/', ctx.origin).toString();
 
-    const loginCompleteUrl = `${ctx.origin}/web4/login/complete?${qs.stringify({ web4_callback_url: callbackUrl })}`;
-
     ctx.type = 'text/html';
     ctx.body = await renderTemplate('login/login.html', {
         CONTRACT_ID: web4_contract_id || contractId,
-        CALLBACK_URL: loginCompleteUrl
+        CALLBACK_URL: callbackUrl
     });
 });
 

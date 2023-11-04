@@ -135,7 +135,7 @@ test('test.near.page/web4/login', async t => {
     t.equal(res.headers['content-type'], 'text/html; charset=utf-8');
 
     t.match(res.text, /const CONTRACT_ID = "test.near";/);
-    t.match(res.text, /const CALLBACK_URL = "http:\/\/test.near.page\/web4\/login\/complete\?web4_callback_url=http%3A%2F%2Ftest.near.page%2F";/);
+    t.match(res.text, /const CALLBACK_URL = "http:\/\/test.near.page\/";/);
 });
 
 test('test.near.page/web4/login/complete missing callback', async t => {

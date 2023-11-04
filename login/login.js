@@ -1,4 +1,5 @@
 import Cookies from 'js-cookie';
+import qs from 'querystring';
 import { HereWallet } from "@here-wallet/core";
 import { MeteorWallet } from "@meteorwallet/sdk";
 import { connect, KeyPair } from "near-api-js";
@@ -72,6 +73,9 @@ async function signInNEARWallet({
     Cookies.set('web4_private_key', keyPair.toString());
     localStorage.setItem('web4_wallet_url', walletUrl);
 
+    callbackUrl = new URL(
+        `/web4/login/complete?${qs.stringify({ web4_callback_url: callbackUrl })}`,
+        window.location.href).href;
     const url = signInURL({
         walletUrl,
         contractId,
