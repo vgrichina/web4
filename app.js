@@ -210,7 +210,22 @@ router.post('/web4/contract/:contractId/:methodName', withNear, withAccountId, r
                 ctx.redirect(callbackUrl);
                 // TODO: Pass transaction hashes, etc to callback?
             } else {
+                const { status } = result;
+
+                if (status?.SuccessValue) {
+                    const callResult = Buffer.from(status.SuccessValue, 'base64')
+                    debug('Call succeeded with result', callResult);
+                    // TODO: Detect content type from returned result
+                    ctx.type = 'application/json';
+                    ctx.status = 200;
+                    ctx.body = callResult;
+                    // TODO: Return extra info in headers like tx hash, etc
+                    return;
+                }
+
+                debug('Call failed with result', result);
                 // TODO: Decide what exactly to return
+                ctx.status = 409;
                 ctx.body = result;
             }
             return;
