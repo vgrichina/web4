@@ -321,6 +321,9 @@ function mockTransactionSuccess(receiverId, methodName, callback) {
                     jsonrpc: '2.0',
                     id: body.id,
                     result: {
+                        status: {
+                            SuccessValue: '',
+                        },
                         transaction_outcome: {
                             outcome: {
                                 logs: [],
@@ -349,8 +352,8 @@ test('/web4/contract/test.near/web4_setStaticUrl method call with key in cookie'
         .send({ url: 'test://url' });
 
     t.equal(res.status, 200);
-    // TODO: Decide what exactly to return
-    t.equal(res.text, '{"transaction_outcome":{"outcome":{"logs":[],"status":{},"receipt_ids":[]}},"receipts_outcome":[]}');
+    // TODO: Test failure case
+    t.equal(res.text, '');
 });
 
 test('/web4/contract/test.near/setNestedObject method call with nested object in form data', async t => {

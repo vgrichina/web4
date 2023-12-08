@@ -212,7 +212,7 @@ router.post('/web4/contract/:contractId/:methodName', withNear, withAccountId, r
             } else {
                 const { status } = result;
 
-                if (status?.SuccessValue) {
+                if (status?.SuccessValue !== undefined) {
                     const callResult = Buffer.from(status.SuccessValue, 'base64')
                     debug('Call succeeded with result', callResult);
                     // TODO: Detect content type from returned result
