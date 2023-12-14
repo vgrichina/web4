@@ -119,7 +119,8 @@ router.get('/web4/login', withNear, withContractId, async ctx => {
     ctx.type = 'text/html';
     ctx.body = await renderTemplate('login/login.html', {
         CONTRACT_ID: web4_contract_id || contractId,
-        CALLBACK_URL: callbackUrl
+        CALLBACK_URL: callbackUrl,
+        NETWORK_ID: ctx.near.connection.networkId,
     });
 });
 

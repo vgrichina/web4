@@ -1,6 +1,7 @@
 <script type="text/javascript">
     const CONTRACT_ID = $CONTRACT_ID$;
     const CALLBACK_URL = $CALLBACK_URL$;
+    const NETWORK_ID = $NETWORK_ID$;
 </script>
 
 <script src="./login.js" type="text/javascript"></script>
@@ -64,7 +65,7 @@
 <script type="text/javascript">
     async function signIn(key) {
         localStorage.setItem('web4_wallet', key);
-        await window.wallets[key].signIn({ contractId: CONTRACT_ID, callbackUrl: CALLBACK_URL });
+        await window.wallets[key].signIn({ networkId: NETWORK_ID, contractId: CONTRACT_ID, callbackUrl: CALLBACK_URL });
     }
 
     document.querySelector('.wallet-list').innerHTML = 

@@ -14,12 +14,12 @@ import nearIcon from './icons/near';
 import myNearIcon from './icons/my-near';
 import meteorIcon from './icons/meteor';
 
-async function signInHereWallet({ contractId, callbackUrl }) {
-    const here = new HereWallet()
+async function signInHereWallet({ networkId, contractId, callbackUrl }) {
+    const here = new HereWallet({ networkId })
     const accountId = await here.signIn({ contractId });
     console.log(`Hello ${accountId}!`);
     Cookies.set('web4_account_id', accountId);
-    Cookies.set('web4_private_key', (await here.authStorage.getKey(here.connection.networkId, accountId)).toString());
+    Cookies.set('web4_private_key', (await here.authStorage.getKey(networkId, accountId)).toString());
 
     window.location.href = callbackUrl;
 }
@@ -113,26 +113,24 @@ async function sendTransactionNEARWallet({
     window.location.href = url;
 }
 
-async function createMeteorWallet() {
+async function createMeteorWallet({ networkId = "mainnet"}) {
     const keyStore = new BrowserLocalStorageKeyStore(window.localStorage, "_meteor_wallet");
 
     const near = await connect({
         keyStore,
-        // TODO: Propagate this from config
-        networkId: "mainnet",
-        nodeUrl: "https://rpc.mainnet.near.org",
-        // headers: {},
+        networkId,
+        nodeUrl: networkId == 'mainnet' ? 'https://rpc.mainnet.near.org' : 'https://rpc.testnet.near.org',
     });
 
     return new MeteorWallet({ near, appKeyPrefix: "near_app" });
 }
 
-async function signInMeteorWallet({ contractId, callbackUrl }) {
+async function signInMeteorWallet({ networkId, contractId, callbackUrl }) {
     const keyPair = KeyPair.fromRandom('ed25519');
     Cookies.set('web4_account_id');
     Cookies.set('web4_private_key', keyPair.toString());
 
-    const wallet = await createMeteorWallet();
+    const wallet = await createMeteorWallet({ networkId });
 
     const { success, payload: { accountId }} = await wallet.requestSignIn({
         contract_id: contractId,
@@ -194,13 +192,19 @@ window.wallets = {
         iconUrl: hereIcon
     },
     near: {
-        signIn: signInNEARWallet,
+        signIn: ({ networkId, ...args }) => signInNEARWallet({
+            ...args,
+            walletUrl: networkId == 'mainnet' ? 'https://wallet.near.org' : 'https://wallet.testnet.near.org'
+        }),
         sendTransaction: sendTransactionNEARWallet,
         name: 'NEAR Wallet',
         iconUrl: nearIcon
     },
     mynearwallet: {
-        signIn: ({ ...args }) => signInNEARWallet({ ...args, walletUrl: 'https://app.mynearwallet.com' }),
+        signIn: ({ networkId, ...args }) => signInNEARWallet({
+            ...args,
+            walletUrl: networkId == 'mainnet' ? 'https://app.mynearwallet.com' :  'https://testnet.mynearwallet.com'
+        }),
         sendTransaction: sendTransactionNEARWallet,
         name: 'MyNearWallet',
         iconUrl: myNearIcon
