@@ -369,9 +369,6 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
                 }
             }
 
-            if (e.toString().includes('block height')) {
-                console.error('error', e);
-            }
             throw e;
         }
 
