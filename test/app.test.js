@@ -323,6 +323,10 @@ function mockTransactionOutcome(receiverId, methodName, outcome, callback) {
                 }
                 callback && callback(transaction);
                 return rpcResult(body.id, {
+                    // TODO: Hardcoded for now, figure out stucture of failure response before fixing
+                    status: {
+                        SuccessValue: '',
+                    },
                     transaction_outcome: {
                         outcome,
                     },
@@ -336,12 +340,11 @@ function mockTransactionOutcome(receiverId, methodName, outcome, callback) {
 function mockTransactionSuccess(receiverId, methodName, callback) {
     return mockTransactionOutcome(receiverId, methodName, {
         logs: [],
-        status: {
-            SuccessValue: '',
-        },
         receipt_ids: [],
     }, callback);
 }
+
+// TODO: Test contract call failure with error message
 
 test('/web4/contract/test.near/web4_setStaticUrl method call with key in cookie', async t => {
     await setup(t);
