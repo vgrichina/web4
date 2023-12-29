@@ -45,6 +45,7 @@ server {
         # Make sure to not cache tx POST requests with private key supplied
         # proxy_cache_methods POST;
         # proxy_cache_key "$request_uri|$request_body";
+        # TODO: Ignore account_id for contract view calls?
         proxy_cache_key "$host|$request_uri$cookie_web4_account_id";
         proxy_buffers 8 32k;
         proxy_buffer_size 64k;
