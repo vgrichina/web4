@@ -117,7 +117,7 @@ router.get('/web4/login', withNear, withContractId, async ctx => {
     const callbackUrl = new URL(web4_callback_url || ctx.get('referrer') || '/', ctx.origin).toString();
 
     ctx.type = 'text/html';
-    ctx.body = await renderTemplate('login/login.html', {
+    ctx.body = await renderTemplate('wallet-adapter/login.html', {
         CONTRACT_ID: web4_contract_id || contractId,
         CALLBACK_URL: callbackUrl,
         NETWORK_ID: ctx.near.connection.networkId,
@@ -126,7 +126,7 @@ router.get('/web4/login', withNear, withContractId, async ctx => {
 
 router.get('/web4/login.js', async ctx => {
     ctx.type = 'text/javascript';
-    ctx.body = await fs.readFile(`${__dirname}/dist/login.js`);
+    ctx.body = await fs.readFile(`${__dirname}/dist/wallet-adapter.js`);
 });
 
 router.get('/web4/login/complete', async ctx => {
@@ -154,7 +154,7 @@ router.get('/web4/sign', withAccountId, requireAccountId, async ctx => {
     } = ctx;
 
     ctx.type = 'text/html';
-    ctx.body = await renderTemplate('login/sign.html', {
+    ctx.body = await renderTemplate('wallet-adapter/sign.html', {
         CONTRACT_ID: web4_contract_id,
         METHOD_NAME: web4_method_name,
         ARGS: web4_args,
