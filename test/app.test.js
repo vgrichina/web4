@@ -275,41 +275,40 @@ test('/web4/sign', async t => {
     t.match(res.text, /const CALLBACK_URL = "http:\/\/test.near.page\/";/);
 });
 
+function rpcResult(id, result) {
+    return {
+        jsonrpc: '2.0',
+        id,
+        result,
+    };
+}
 
-function mockTransactionSuccess(receiverId, methodName, callback) {
+function mockTransactionOutcome(receiverId, methodName, outcome, callback) {
     nock('https://rpc.testnet.near.org')
         .post('/')
         .times(2)
         .reply(200, (url, body) => {
             if (body.method === 'query') {
-                return {
-                    jsonrpc: '2.0',
-                    id: body.id,
-                    result: {
-                        block_height: 1,
-                        permission: {
-                            FunctionCall: {
-                                receiver_id: receiverId,
-                                method_names: [methodName],
-                            }
+                return rpcResult(body.id, {
+                    block_height: 1,
+                    permission: {
+                        FunctionCall: {
+                            receiver_id: receiverId,
+                            method_names: [methodName],
                         }
-                    },
-                };
+                    }
+                });
             }
             throw new Error('Unexpected request: ' + JSON.stringify(body));
         })
         .post('/').reply(200, (url, body) => {
             if (body.method === 'block') {
-                return {
-                    jsonrpc: '2.0',
-                    id: body.id,
-                    result: {
-                        header: {
-                            height: 1,
-                            hash: "CLo31YCUhzz8ZPtS5vXLFskyZgHV5qWgXinBQHgu9Pyd",
-                        },
+                return rpcResult(body.id, {
+                    header: {
+                        height: 1,
+                        hash: "CLo31YCUhzz8ZPtS5vXLFskyZgHV5qWgXinBQHgu9Pyd",
                     },
-                };
+                });
             }
             throw new Error('Unexpected request: ' + JSON.stringify(body));
         })
@@ -323,23 +322,23 @@ function mockTransactionSuccess(receiverId, methodName, callback) {
                     throw e;
                 }
                 callback && callback(transaction);
-                return {
-                    jsonrpc: '2.0',
-                    id: body.id,
-                    result: {
-                        transaction_outcome: {
-                            outcome: {
-                                logs: [],
-                                status: {},
-                                receipt_ids: [],
-                            }
-                        },
-                        receipts_outcome: [],
+                return rpcResult(body.id, {
+                    transaction_outcome: {
+                        outcome,
                     },
-                };
+                    receipts_outcome: [],
+                });
             }
             throw new Error('Unexpected request: ' + JSON.stringify(body));
         });
+}
+
+function mockTransactionSuccess(receiverId, methodName, callback) {
+    return mockTransactionOutcome(receiverId, methodName, {
+        logs: [],
+        status: {},
+        receipt_ids: [],
+    }, callback);
 }
 
 test('/web4/contract/test.near/web4_setStaticUrl method call with key in cookie', async t => {
