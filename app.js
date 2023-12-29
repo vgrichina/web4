@@ -1,11 +1,8 @@
 const {
     connect,
     keyStores: { InMemoryKeyStore },
-    transactions: { Transaction, functionCall },
     KeyPair,
 } = require('near-api-js');
-const { PublicKey } = require('near-api-js/lib/utils');
-const { signInURL, signTransactionsURL } = require('./util/web-wallet-api');
 
 const fetch = require('node-fetch');
 const qs = require('qs');
@@ -66,14 +63,14 @@ const getRawBody = require('raw-body');
 
 const FAST_NEAR_URL = process.env.FAST_NEAR_URL;
 
-const callViewFunction = async ({ near }, contractId, methodName, methodParams) => {
+const callViewFunction = async ({ near }, contractId, methodName, args) => {
     if (FAST_NEAR_URL) {
         const res = await fetch(`${FAST_NEAR_URL}/account/${contractId}/view/${methodName}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(methodParams)
+            body: JSON.stringify(args)
         });
         if (!res.ok) {
             throw new Error(await res.text());
@@ -82,7 +79,7 @@ const callViewFunction = async ({ near }, contractId, methodName, methodParams) 
     }
 
     const account = await near.account(contractId);
-    return await account.viewFunction(contractId, methodName, methodParams);
+    return await account.viewFunction({ contractId, methodName, args });
 }
 
 router.get('/web4/contract/:contractId/:methodName', withNear, async ctx => {
@@ -100,26 +97,36 @@ router.get('/web4/contract/:contractId/:methodName', withNear, async ctx => {
     ctx.body = await callViewFunction(ctx, contractId, methodName, methodParams);
 });
 
+const fs = require('fs/promises');
+
+// TODO: Less hacky templating?
+async function renderTemplate(templatePath, params) {
+    let result = await fs.readFile(`${__dirname}/${templatePath}`, 'utf8');
+    for (key of Object.keys(params)) {
+        result = result.replace(`$${key}$`, JSON.stringify(params[key]));
+    }
+    return result;
+}
+
 router.get('/web4/login', withNear, withContractId, async ctx => {
     let {
         contractId,
         query: { web4_callback_url, web4_contract_id }
     } = ctx;
 
-    const keyPair = KeyPair.fromRandom('ed25519');
-    ctx.cookies.set('web4_private_key', keyPair.toString(), { httpOnly: false });
-    ctx.cookies.set('web4_account_id', null, { httpOnly: false });
-
     const callbackUrl = new URL(web4_callback_url || ctx.get('referrer') || '/', ctx.origin).toString();
 
-    const loginCompleteUrl = `${ctx.origin}/web4/login/complete?${qs.stringify({ web4_callback_url: callbackUrl })}`;
-    ctx.redirect(signInURL({
-        walletUrl: config.walletUrl,
-        contractId: web4_contract_id || contractId,
-        publicKey: keyPair.getPublicKey().toString(),
-        successUrl: loginCompleteUrl,
-        failureUrl: loginCompleteUrl
-    }));
+    ctx.type = 'text/html';
+    ctx.body = await renderTemplate('wallet-adapter/login.html', {
+        CONTRACT_ID: web4_contract_id || contractId,
+        CALLBACK_URL: callbackUrl,
+        NETWORK_ID: ctx.near.connection.networkId,
+    });
+});
+
+router.get('/web4/wallet-adapter.js', async ctx => {
+    ctx.type = 'text/javascript';
+    ctx.body = await fs.readFile(`${__dirname}/wallet-adapter/dist/wallet-adapter.js`);
 });
 
 router.get('/web4/login/complete', async ctx => {
@@ -132,6 +139,29 @@ router.get('/web4/login/complete', async ctx => {
     }
 
     ctx.redirect(web4_callback_url);
+});
+
+router.get('/web4/sign', withAccountId, requireAccountId, async ctx => {
+    const {
+        query: {
+            web4_contract_id,
+            web4_method_name,
+            web4_args,
+            web4_gas,
+            web4_deposit,
+            web4_callback_url
+        }
+    } = ctx;
+
+    ctx.type = 'text/html';
+    ctx.body = await renderTemplate('wallet-adapter/sign.html', {
+        CONTRACT_ID: web4_contract_id,
+        METHOD_NAME: web4_method_name,
+        ARGS: web4_args,
+        GAS: web4_gas,
+        DEPOSIT: web4_deposit,
+        CALLBACK_URL: web4_callback_url
+    });
 });
 
 router.get('/web4/logout', async ctx => {
@@ -167,6 +197,7 @@ router.post('/web4/contract/:contractId/:methodName', withNear, withAccountId, r
             .filter(key => !key.startsWith('web4_'))
             .map(key => ({ [key]: body[key] }))
             .reduce((a, b) => ({...a, ...b}), {});
+        args = Buffer.from(JSON.stringify(args));
         // TODO: Allow to pass web4_ stuff in headers as well
         if (body.web4_gas) {
             gas = body.web4_gas;
@@ -194,60 +225,67 @@ router.post('/web4/contract/:contractId/:methodName', withNear, withAccountId, r
         const near = await connect({ ...ctx.near.config, keyStore: appKeyStore });
 
         debug('Checking access key', keyPair.getPublicKey().toString());
-        const { permission: { FunctionCall }} = await near.connection.provider.query({
-            request_type: 'view_access_key',
-            account_id: accountId,
-            public_key: keyPair.getPublicKey().toString(),
-            finality: 'optimistic'
-        });
-        if (FunctionCall && FunctionCall.receiver_id == contractId) {
-            debug('Access key found');
-            const account = await near.account(accountId);
-            const result = await account.functionCall({ contractId, methodName, args, gas, deposit });
-            debug('Result', result);
-            // TODO: when used from fetch, etc shouldn't really redirect. Judge based on Accepts header?
-            if (ctx.request.type == 'application/x-www-form-urlencoded') {
-                ctx.redirect(callbackUrl);
-                // TODO: Pass transaction hashes, etc to callback?
-            } else {
-                const { status } = result;
+        try {
+            // TODO: Migrate towards fast-near REST API
+            const { permission: { FunctionCall }} = await near.connection.provider.query({
+                request_type: 'view_access_key',
+                account_id: accountId,
+                public_key: keyPair.getPublicKey().toString(),
+                finality: 'optimistic'
+            });
+            if (FunctionCall && FunctionCall.receiver_id == contractId) {
+                debug('Access key found');
+                const account = await near.account(accountId);
+                const result = await account.functionCall({ contractId, methodName, args, gas, deposit });
+                debug('Result', result);
+                // TODO: when used from fetch, etc shouldn't really redirect. Judge based on Accepts header?
+                if (ctx.request.type == 'application/x-www-form-urlencoded') {
+                    ctx.redirect(callbackUrl);
+                    // TODO: Pass transaction hashes, etc to callback?
+                } else {
+                    const { status } = result;
 
-                if (status?.SuccessValue !== undefined) {
-                    const callResult = Buffer.from(status.SuccessValue, 'base64')
-                    debug('Call succeeded with result', callResult);
-                    // TODO: Detect content type from returned result
-                    ctx.type = 'application/json';
-                    ctx.status = 200;
-                    ctx.body = callResult;
-                    // TODO: Return extra info in headers like tx hash, etc
-                    return;
+                    if (status?.SuccessValue !== undefined) {
+                        const callResult = Buffer.from(status.SuccessValue, 'base64')
+                        debug('Call succeeded with result', callResult);
+                        // TODO: Detect content type from returned result
+                        ctx.type = 'application/json';
+                        ctx.status = 200;
+                        ctx.body = callResult;
+                        // TODO: Return extra info in headers like tx hash, etc
+                        return;
+                    }
+
+                    debug('Call failed with result', result);
+                    // TODO: Decide what exactly to return
+                    ctx.status = 409;
+                    ctx.body = result;
                 }
-
-                debug('Call failed with result', result);
-                // TODO: Decide what exactly to return
-                ctx.status = 409;
-                ctx.body = result;
+                return;
             }
-            return;
+        } catch (e) {
+            if (!e.toString().includes('does not exist while viewing')) {
+                debug('Error checking access key', e);
+                throw e;
+            } 
+
+            debug('Access key not found, falling back to wallet');
         }
     }
 
-    // NOTE: publicKey, nonce, blockHash keys are faked as reconstructed by wallet
-    const transaction = new Transaction({
-        signerId: accountId,
-        publicKey: new PublicKey({ type: 0, data: Buffer.from(new Array(32))}),
-        nonce: 0,
-        receiverId: contractId,
-        actions: [
-            functionCall(methodName, args, gas, deposit)
-        ],
-        blockHash: Buffer.from(new Array(32))
-    });
-    const url = signTransactionsURL({
-        walletUrl: config.walletUrl,
-        transactions: [transaction],
-        callbackUrl
-    });
+    debug('Signing with wallet');
+
+    const url = `/web4/sign?${
+        qs.stringify({
+            web4_contract_id: contractId,
+            web4_method_name: methodName,
+            web4_args: Buffer.from(args).toString('base64'),
+            web4_contract_id: contractId,
+            web4_gas: gas,
+            web4_deposit: deposit,
+            web4_callback_url: callbackUrl
+        })}`;
+    debug('Redirecting to', url);
     ctx.redirect(url);
     // TODO: Need to do something else than wallet redirect for CORS-enabled fetch
 });
@@ -272,7 +310,7 @@ async function withContractId(ctx, next) {
             try {
                 const addresses = await dns.resolveCname(host);
                 const address = addresses.find(contractFromHost);
-                if (address) {
+            if (address) {
                     contractId = contractFromHost(address);
                     break;
                 }
@@ -331,9 +369,6 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
                 }
             }
 
-            if (e.toString().includes('block height')) {
-                console.error('error', e);
-            }
             throw e;
         }
 

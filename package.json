@@ -2,7 +2,16 @@
   "name": "web4-near",
   "version": "0.5.0",
   "description": "Web3 using plain HTTP",
-  "keywords": ["rust", "assemblyscript", "permaweb", "ipfs", "blockchain", "web3", "web4", "nearprotocol"],
+  "keywords": [
+    "rust",
+    "assemblyscript",
+    "permaweb",
+    "ipfs",
+    "blockchain",
+    "web3",
+    "web4",
+    "nearprotocol"
+  ],
   "bin": {
     "web4": "bin/web4"
   },
@@ -16,6 +25,7 @@
   "scripts": {
     "build": "npm run build:contract",
     "build:website": "mkdir -p dist && marked -i README.md -o dist/_index.html && cp -R public/* dist/ && cat templates/header.html dist/_index.html > dist/index.html",
+    "build:wallet-adapter": "npx browserify wallet-adapter/wallet-adapter.js -p esmify > wallet-adapter/dist/wallet-adapter.js",
     "build:contract": "cd contract && npm run build:release",
     "build:contract:debug": "cd contract && npm run build:debug",
     "dev:deploy:contract": "near dev-deploy --wasmFile contract/build/debug/greeter.wasm",
@@ -32,14 +42,19 @@
   "dependencies": {
     "koa": "^2.13.1",
     "koa-router": "^10.0.0",
-    "near-api-js": "^0.43.1",
+    "near-api-js": "^2.1.4",
     "node-fetch": "^2.6.1",
     "qs": "^6.11.1",
     "raw-body": "^2.5.2"
   },
   "devDependencies": {
+    "@here-wallet/core": "^1.5.1",
+    "@meteorwallet/sdk": "^0.8.0",
+    "browserify": "^17.0.0",
     "env-cmd": "^10.1.0",
+    "esmify": "^2.1.1",
     "fast-near": "^0.4.2",
+    "js-cookie": "^3.0.5",
     "marked": "^3.0.4",
     "nock": "^13.3.0",
     "nodemon": "^2.0.7",

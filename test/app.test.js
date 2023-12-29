@@ -131,26 +131,11 @@ test('test.near.page/web4/login', async t => {
         .get('/web4/login')
         .set('Host', 'test.near.page');
 
-    t.equal(res.status, 302);
+    t.equal(res.status, 200);
     t.equal(res.headers['content-type'], 'text/html; charset=utf-8');
-    t.match(res.text, /Redirecting to/);
-    const location = res.headers['location'];
-    t.match(location, /https:\/\/wallet.testnet.near.org\/login\/?/);
 
-    const searchParams = new URL(location).searchParams;
-    const callbackUrl = 'http://test.near.page/web4/login/complete?web4_callback_url=http%3A%2F%2Ftest.near.page%2F';
-    t.equal(searchParams.get('success_url'), callbackUrl);
-    t.equal(searchParams.get('failure_url'), callbackUrl);
-    t.equal(searchParams.get('contract_id'), 'test.near');
-    const publicKey = searchParams.get('public_key');
-    t.match(publicKey, /^ed25519:/);
-
-    const cookies = parseCookies(res);
-    t.equal(cookies.web4_account_id, '');
-    t.ok(cookies.web4_private_key);
-
-    const keyPair = KeyPair.fromString(cookies.web4_private_key);
-    t.equal(publicKey, keyPair.getPublicKey().toString());
+    t.match(res.text, /const CONTRACT_ID = "test.near";/);
+    t.match(res.text, /const CALLBACK_URL = "http:\/\/test.near.page\/";/);
 });
 
 test('test.near.page/web4/login/complete missing callback', async t => {
@@ -254,56 +239,76 @@ test('/web4/contract/test.near/web4_setStaticUrl method call through wallet', as
 
     t.equal(res.status, 302);
     const { location } = res.headers;
-    t.match(location, /https:\/\/wallet.testnet.near.org\/sign\/?/);
-    const { searchParams } = new URL(location);
-    t.equal(searchParams.get('callbackUrl'), 'http://test.near.page/');
-    const transactionBase64 = searchParams.get('transactions');
-    t.ok(transactionBase64);
-    const transactionData = Buffer.from(transactionBase64, 'base64');
-    const transaction = Transaction.decode(transactionData);
-    t.ok(transaction.actions);
-    t.equal(transaction.receiverId, 'test.near');
-    t.equal(transaction.signerId, 'logged-in.near');
-    t.equal(transaction.actions.length, 1);
-    const { functionCall } = transaction.actions[0];
-    t.equal(functionCall.methodName, 'web4_setStaticUrl');
-    t.equal(Buffer.from(functionCall.args).toString('utf8'), '{"url":"test://url"}');
+    t.match(location, /\/web4\/sign\/?/);
+    const { searchParams } = new URL(location, 'http://test.near.page/');
+    t.equal(searchParams.get('web4_callback_url'), 'http://test.near.page/');
+    t.equal(searchParams.get('web4_contract_id'), 'test.near');
+    t.equal(searchParams.get('web4_method_name'), 'web4_setStaticUrl');
+    t.equal(searchParams.get('web4_args'), Buffer.from('{"url":"test://url"}').toString('base64'));
+    t.equal(searchParams.get('web4_gas'), '300000000000000');
+    t.equal(searchParams.get('web4_deposit'), '0');
 });
 
-function mockTransactionSuccess(receiverId, methodName, callback) {
+test('/web4/sign', async t => {
+    await setup(t);
+
+    const res = await request
+        .get('/web4/sign')
+        .query({
+            web4_callback_url: 'http://test.near.page/',
+            web4_contract_id: 'test.near',
+            web4_method_name: 'web4_setStaticUrl',
+            web4_args: Buffer.from('{"url":"test://url"}').toString('base64'),
+            web4_gas: '300000000000000',
+            web4_deposit: '0',
+        })
+        .set('Host', 'test.near.page')
+        .set('Cookie', 'web4_account_id=logged-in.near');
+
+    t.equal(res.status, 200);
+    t.match(res.text, /const CONTRACT_ID = "test.near";/);
+    t.match(res.text, /const METHOD_NAME = "web4_setStaticUrl";/);
+    const EXPECTED_ARGS_BASE64 = Buffer.from('{"url":"test://url"}').toString('base64');
+    t.match(res.text, new RegExp(`const ARGS = "${EXPECTED_ARGS_BASE64}";`));
+    t.match(res.text, /const GAS = "300000000000000";/);
+    t.match(res.text, /const DEPOSIT = "0";/);
+    t.match(res.text, /const CALLBACK_URL = "http:\/\/test.near.page\/";/);
+});
+
+function rpcResult(id, result) {
+    return {
+        jsonrpc: '2.0',
+        id,
+        result,
+    };
+}
+
+function mockTransactionOutcome(receiverId, methodName, outcome, callback) {
     nock('https://rpc.testnet.near.org')
         .post('/')
         .times(2)
         .reply(200, (url, body) => {
             if (body.method === 'query') {
-                return {
-                    jsonrpc: '2.0',
-                    id: body.id,
-                    result: {
-                        block_height: 1,
-                        permission: {
-                            FunctionCall: {
-                                receiver_id: receiverId,
-                                method_names: [methodName],
-                            }
+                return rpcResult(body.id, {
+                    block_height: 1,
+                    permission: {
+                        FunctionCall: {
+                            receiver_id: receiverId,
+                            method_names: [methodName],
                         }
-                    },
-                };
+                    }
+                });
             }
             throw new Error('Unexpected request: ' + JSON.stringify(body));
         })
         .post('/').reply(200, (url, body) => {
             if (body.method === 'block') {
-                return {
-                    jsonrpc: '2.0',
-                    id: body.id,
-                    result: {
-                        header: {
-                            height: 1,
-                            hash: "CLo31YCUhzz8ZPtS5vXLFskyZgHV5qWgXinBQHgu9Pyd",
-                        },
+                return rpcResult(body.id, {
+                    header: {
+                        height: 1,
+                        hash: "CLo31YCUhzz8ZPtS5vXLFskyZgHV5qWgXinBQHgu9Pyd",
                     },
-                };
+                });
             }
             throw new Error('Unexpected request: ' + JSON.stringify(body));
         })
@@ -317,27 +322,29 @@ function mockTransactionSuccess(receiverId, methodName, callback) {
                     throw e;
                 }
                 callback && callback(transaction);
-                return {
-                    jsonrpc: '2.0',
-                    id: body.id,
-                    result: {
-                        status: {
-                            SuccessValue: '',
-                        },
-                        transaction_outcome: {
-                            outcome: {
-                                logs: [],
-                                status: {},
-                                receipt_ids: [],
-                            }
-                        },
-                        receipts_outcome: [],
+                return rpcResult(body.id, {
+                    // TODO: Hardcoded for now, figure out stucture of failure response before fixing
+                    status: {
+                        SuccessValue: '',
                     },
-                };
+                    transaction_outcome: {
+                        outcome,
+                    },
+                    receipts_outcome: [],
+                });
             }
             throw new Error('Unexpected request: ' + JSON.stringify(body));
         });
 }
+
+function mockTransactionSuccess(receiverId, methodName, callback) {
+    return mockTransactionOutcome(receiverId, methodName, {
+        logs: [],
+        receipt_ids: [],
+    }, callback);
+}
+
+// TODO: Test contract call failure with error message
 
 test('/web4/contract/test.near/web4_setStaticUrl method call with key in cookie', async t => {
     await setup(t);
