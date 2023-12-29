@@ -124,9 +124,9 @@ router.get('/web4/login', withNear, withContractId, async ctx => {
     });
 });
 
-router.get('/web4/login.js', async ctx => {
+router.get('/web4/wallet-adapter.js', async ctx => {
     ctx.type = 'text/javascript';
-    ctx.body = await fs.readFile(`${__dirname}/dist/wallet-adapter.js`);
+    ctx.body = await fs.readFile(`${__dirname}/wallet-adapter/dist/wallet-adapter.js`);
 });
 
 router.get('/web4/login/complete', async ctx => {
