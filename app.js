@@ -267,7 +267,7 @@ router.post('/web4/contract/:contractId/:methodName', withNear, withAccountId, r
             if (!e.toString().includes('does not exist while viewing')) {
                 debug('Error checking access key', e);
                 throw e;
-            } 
+            }
 
             debug('Access key not found, falling back to wallet');
         }
@@ -444,7 +444,8 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
                 ctx.set('cache-control', cacheControl);
             } else {
                 // Set reasonable defaults based on content type
-                if (ctx.type.startsWith('image/') || ctx.type.startsWith('video/') || ctx.type.startsWith('audio/') ||
+                if (ctx.type.startsWith('image/') || ctx.type.startsWith('font/') ||
+                        ctx.type.startsWith('video/') || ctx.type.startsWith('audio/') ||
                         ctx.type === 'application/javascript' || ctx.type === 'text/css' ) {
                     // NOTE: modern web apps typically have these static with a unique URL, so can cache for a long time (1 hour)
                     ctx.set('cache-control', 'public, max-age=3600');
