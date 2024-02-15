@@ -30,6 +30,7 @@ Every smart contract on NEAR also gets corresponding API endpoint which can be a
 
 - https://awesomeweb4.near.page
 - https://thewiki.near.page
+- https://slimebook.near.page
 - https://lands.near.page
 - https://zavodil.near.page
 - https://psalomo.near.page
