@@ -21,6 +21,7 @@
     "*.js"
   ],
   "main": "app.js",
+  "engines": { "node" : ">=16.0" },
   "license": "MIT",
   "scripts": {
     "build": "npm run build:contract",
