@@ -14,7 +14,7 @@ import myNearIcon from './icons/my-near';
 import meteorIcon from './icons/meteor';
 
 async function signInHereWallet({ networkId, contractId, callbackUrl }) {
-    const here = new HereWallet({ networkId })
+    const here = await HereWallet.connect({ networkId });
     const accountId = await here.signIn({ contractId });
     console.log(`Hello ${accountId}!`);
     Cookies.set('web4_account_id', accountId);
@@ -28,7 +28,8 @@ async function sendTransactionHereWallet({
     actions,
     callbackUrl
 }) {
-    const here = new HereWallet()
+    // TODO: networkId?
+    const here = await HereWallet.connect();
     const signerId = Cookies.get('web4_account_id');
     try {
         await here.signAndSendTransaction({

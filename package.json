@@ -48,7 +48,7 @@
     "raw-body": "^2.5.2"
   },
   "devDependencies": {
-    "@here-wallet/core": "^1.5.1",
+    "@here-wallet/core": "^3.1.0",
     "@meteorwallet/sdk": "^0.8.0",
     "browserify": "^17.0.0",
     "env-cmd": "^10.1.0",
