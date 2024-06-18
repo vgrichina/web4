@@ -304,13 +304,15 @@ const dns = require('dns').promises;
 async function withContractId(ctx, next) {
     let contractId = contractFromHost(ctx.host);
 
-    if (!contractId) {
+    const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(ctx.host.split(':')[0]);
+
+    if (!contractId && !isLocalhost) {
         for (let host of [ctx.host, `www.${ctx.host}`]) {
             // Try to resolve custom domain CNAME record
             try {
                 const addresses = await dns.resolveCname(host);
                 const address = addresses.find(contractFromHost);
-            if (address) {
+                if (address) {
                     contractId = contractFromHost(address);
                     break;
                 }
