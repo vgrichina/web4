@@ -363,6 +363,7 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
             if (e.message.includes('CompilationError(CodeDoesNotExist')
                 || e.message.includes('MethodResolveError(MethodNotFound')
                 || e.message.startsWith('codeNotFound')
+                || e.message.match(/Account ID .* is invalid/) // NOTE: Looks like NEAR RPC returns this for non-existent contract code
                 || e.message.includes('method web4_get not found')) {
 
                 if (i == 0) {
