@@ -11,7 +11,7 @@ const MAX_PRELOAD_HOPS = 5;
 const IPFS_GATEWAY_URL = (process.env.IPFS_GATEWAY_URL || 'https://cloudflare-ipfs.com').trim();
 const NEARFS_GATEWAY_URL = (process.env.NEARFS_GATEWAY_URL || 'https://ipfs.web4.near.page').trim();
 
-const config = require('./config')(process.env.NODE_ENV || 'development')
+const config = require('./config')(process.env.NEAR_ENV || process.env.NODE_ENV || 'development')
 
 async function withDebug(ctx, next) {
     ctx.debug = require('debug')(`web4:${ctx.host}${ctx.path}?${qs.stringify(ctx.query)}`);
