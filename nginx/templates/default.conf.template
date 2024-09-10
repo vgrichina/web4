@@ -64,7 +64,7 @@ server {
 
 server {
     listen 80;
-    server_name ipfs.web4.near.page;
+    server_name .ipfs.web4.near.page;
 
     location /ipfs {
         # TODO: Set expires based on content type like https://gist.github.com/bkawk/1d7ecc97e3be3cd04e8e173483d82e1a?
@@ -99,7 +99,7 @@ server {
 
 server {
     listen 80;
-    server_name ipfs.web4.testnet.page;
+    server_name .ipfs.web4.testnet.page;
 
     location /ipfs {
         # TODO: Set expires based on content type like https://gist.github.com/bkawk/1d7ecc97e3be3cd04e8e173483d82e1a?
