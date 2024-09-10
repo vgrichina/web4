@@ -66,7 +66,7 @@ server {
     listen 80;
     server_name .ipfs.web4.near.page;
 
-    location /ipfs {
+    location / {
         # TODO: Set expires based on content type like https://gist.github.com/bkawk/1d7ecc97e3be3cd04e8e173483d82e1a?
         proxy_http_version 1.1;
         proxy_set_header Host $host;
@@ -101,7 +101,7 @@ server {
     listen 80;
     server_name .ipfs.web4.testnet.page;
 
-    location /ipfs {
+    location / {
         # TODO: Set expires based on content type like https://gist.github.com/bkawk/1d7ecc97e3be3cd04e8e173483d82e1a?
         proxy_http_version 1.1;
         proxy_set_header Host $host;
