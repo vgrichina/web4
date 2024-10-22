@@ -21,7 +21,9 @@
     "*.js"
   ],
   "main": "app.js",
-  "engines": { "node" : ">=16.0" },
+  "engines": {
+    "node": ">=16.0"
+  },
   "license": "MIT",
   "scripts": {
     "build": "npm run build:contract",
@@ -50,7 +52,7 @@
     "raw-body": "^2.5.2"
   },
   "devDependencies": {
-    "@here-wallet/core": "^3.1.0",
+    "@here-wallet/core": "^3.3.1",
     "@meteorwallet/sdk": "^0.8.0",
     "browserify": "^17.0.0",
     "env-cmd": "^10.1.0",
