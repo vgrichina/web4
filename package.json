@@ -18,6 +18,7 @@
   "files": [
     "bin",
     "util",
+    "wallet-adapter",
     "*.js"
   ],
   "main": "app.js",
