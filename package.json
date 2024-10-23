@@ -1,6 +1,6 @@
 {
   "name": "web4-near",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Web3 using plain HTTP",
   "keywords": [
     "rust",
