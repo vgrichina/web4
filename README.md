@@ -26,6 +26,36 @@ There is an [HTTP gateway](https://github.com/vgrichina/web4) to NEAR blockchain
 
 Every smart contract on NEAR also gets corresponding API endpoint which can be accessed through regular HTTP requests.
 
+### Authentication
+
+Web4 provides simplified authentication flow:
+
+- Login via `/web4/login` endpoint
+- Logout via `/web4/logout` endpoint 
+- Current account ID is available via `web4_account_id` cookie
+- Transactions can be submitted via POST requests to `/web4/contract/{contract_id}/{method_name}`
+
+Example usage in JavaScript:
+
+```javascript
+// Login
+window.location.href = '/web4/login'
+
+// Check if user is logged in
+const accountId = Cookies.get('web4_account_id');
+
+// Logout
+window.location.href = '/web4/logout'
+
+// Submit transaction
+await fetch('/web4/contract/example.near/someMethod', {
+    method: 'POST',
+    body: JSON.stringify({ param1: 'value1' })
+})
+```
+
+This allows seamless integration with existing web frameworks while maintaining security through NEAR wallet.
+
 ## Known web4 sites
 
 - https://awesomeweb4.near.page
