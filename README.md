@@ -33,6 +33,7 @@ Web4 provides simplified authentication flow:
 - Login via `/web4/login` endpoint
 - Logout via `/web4/logout` endpoint 
 - Current account ID is available via `web4_account_id` cookie
+- App-specific private key, if used, is stored in `web4_private_key` cookie
 - Transactions can be submitted via POST requests to `/web4/contract/{contract_id}/{method_name}`
 
 Example usage in JavaScript:
