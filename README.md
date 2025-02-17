@@ -314,7 +314,6 @@ We need more example applications, especially:
 - Real-world applications showcasing web4 capabilities
 
 ## Development
-- Check [CONTRIBUTING.md](https://github.com/vgrichina/web4/blob/main/CONTRIBUTING.md) for code contribution guidelines
 - Look for [good first issues](https://github.com/vgrichina/web4/labels/good%20first%20issue)
 - Submit bug reports and feature requests
 - Improve documentation
