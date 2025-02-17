@@ -290,12 +290,6 @@ npx web4-near
 ```
 Then access your app at `https://your-account.near.page`
 
-## How can I contribute?
-Check [CONTRIBUTING.md](https://github.com/vgrichina/web4/blob/main/CONTRIBUTING.md) for guidelines. Start with good first issues:
-```bash
-open https://github.com/vgrichina/web4/labels/good%20first%20issue
-```
-
 ## Can the web4 RPC return different data than direct contract calls?
 Yes, if the RPC indexer falls behind the latest blocks. Check indexer status:
 ```bash
@@ -304,6 +298,26 @@ curl https://rpc.web4.near.page/status
 
 ## How do I deploy to subaccounts?
 Subaccounts are not currently supported by web4. Use custom domains instead - see [custom domain setup guide](https://github.com/vgrichina/web4/wiki/Custom-Domains).
+
+# Contributing
+
+We welcome contributions to web4! Here's how you can help:
+
+## Join the Community
+Join our [Telegram group](https://t.me/web4near) to discuss ideas, ask questions, and connect with other developers.
+
+## Share Your Examples
+We need more example applications, especially:
+- Templates for different frameworks (React, Vue, Angular, etc.)
+- Apps in different languages (Rust, AssemblyScript, JavaScript)
+- Integration examples with various NEAR protocols
+- Real-world applications showcasing web4 capabilities
+
+## Development
+- Check [CONTRIBUTING.md](https://github.com/vgrichina/web4/blob/main/CONTRIBUTING.md) for code contribution guidelines
+- Look for [good first issues](https://github.com/vgrichina/web4/labels/good%20first%20issue)
+- Submit bug reports and feature requests
+- Improve documentation
 
 ## Environment variables
 
