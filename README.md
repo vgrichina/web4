@@ -11,15 +11,12 @@
 
 Quick Start:
 ```bash
-# Create NEAR app with Next.js
-npx create-near-app@latest my-web4-app --frontend next-app
-cd my-web4-app
-
-# Install dependencies and build
-npm install && npm run build
+# Create a simple website
+mkdir my-web4-site && cd my-web4-site
+echo '<h1>Hello Web4!</h1>' > index.html
 
 # Deploy to your account
-npx web4-deploy ./dist --accountId your-account.near
+npx web4-deploy . --accountId your-account.near
 ```
 
 Your site will be live at `https://your-account.near.page` 🎉
