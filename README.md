@@ -2,6 +2,29 @@
 
 # web4
 
+## Table of Contents
+- [TL;DR](#tldr)
+- [What is web4?](#what-is-web4)
+- [How it works?](#how-it-works)
+  - [Authentication](#authentication)
+- [Known web4 sites](#known-web4-sites)
+- [Useful tools](#useful-tools)
+- [Example contract](#example-contract-in-assemblyscript)
+  - [Request](#request)
+  - [Response](#response)
+  - [Loading data](#loading-data)
+  - [Posting transactions](#posting-transactions)
+  - [Caching considerations](#caching-considerations)
+- [Rust support](#rust-support)
+- [Deployment](#deployment)
+  - [near.page](#nearpage)
+  - [testnet.page](#testnetpage)
+- [Running locally](#running-locally)
+- [FAQ](#frequently-asked-questions)
+- [Priorities](#priorities)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+
 ## TL;DR
 
 * Manage website frontend in smart contract
@@ -32,7 +55,8 @@ Your site will be live at `https://your-account.near.page` 🎉
 ## How it works?
 
 You only need to deploy single smart contract using WebAssembly to host your app HTTP backend,
-static resources and blockchain logic.
+static resources and blockchain logic. See [Example contract](#example-contract-in-assemblyscript) or 
+[Rust support](#rust-support) for implementation details.
 
 There is an [HTTP gateway](https://github.com/vgrichina/web4) to NEAR blockchain which allows smart contract to handle arbitrary GET requests.
 
@@ -68,6 +92,10 @@ await fetch('/web4/contract/example.near/someMethod', {
 ```
 
 This allows seamless integration with existing web frameworks while maintaining security through NEAR wallet.
+
+See also:
+- [FAQ: How does authentication work?](#how-does-authentication-work-with-web4)
+- [FAQ: web4/login vs wallet integration](#whats-the-difference-between-web4login-and-integrating-a-wallet-directly)
 
 ## Known web4 sites
 
@@ -206,6 +234,10 @@ You can override this by setting `cacheControl` field in response.
 
 It's not recommended to cache content for too long as then it not going to be hot on IPFS gateway.
 
+See also:
+- [Rust support](#rust-support)
+- [Known web4 sites](#known-web4-sites) for real-world examples
+
 ## Rust support
 
 Check out [sample web4 project made with Rust](https://github.com/frol/near-web4-demo).
@@ -236,6 +268,10 @@ This works same as `near.page` but for contracts deployed on testnet. Every `acc
     IPFS_GATEWAY_URL=https://ipfs.near.social NODE_ENV=mainnet WEB4_KEY_FILE=./_wildcard.near.page-key.pem WEB4_CERT_FILE=./_wildcard.near.page.pem npx web4-near
     ```
 4. Setup browser to use [automatic proxy configuration file](https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling/Proxy_Auto-Configuration_PAC_file) at `http://localhost:8080/` or to use `localhost:8080` as an HTTPS proxy server. 
+
+See also:
+- [FAQ: How can I access my local app bundle?](#how-can-i-access-my-local-app-bundle)
+- [near.page](#nearpage) and [testnet.page](#testnetpage) for production deployment
 
 ## Environment variables
 
