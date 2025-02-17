@@ -5,9 +5,24 @@
 ## TL;DR
 
 * Manage website frontend in smart contract
-* Every `.near` account receives a subdomain under [https://near.page](https://near.page).
-    * E.g. `thewiki.near` serves [https://thewiki.near.page](https://thewiki.near.page).
+* Every `.near` account receives a subdomain under [https://near.page](https://near.page)
+    * E.g. `thewiki.near` serves [https://thewiki.near.page](https://thewiki.near.page)
 * Use IPFS with Filecoin to host larger files
+
+Quick Start:
+```bash
+# Create NEAR app with React
+npx create-near-app@latest my-web4-app
+cd my-web4-app
+
+# Build your app
+npm run build
+
+# Deploy to your account
+npx web4-deploy ./dist --accountId your-account.near
+```
+
+Your site will be live at `https://your-account.near.page` 🎉
 
 ## What is web4?
 
