@@ -237,6 +237,16 @@ This works same as `near.page` but for contracts deployed on testnet. Every `acc
     ```
 4. Setup browser to use [automatic proxy configuration file](https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling/Proxy_Auto-Configuration_PAC_file) at `http://localhost:8080/` or to use `localhost:8080` as an HTTPS proxy server. 
 
+## Environment variables
+
+- `NODE_ENV` - `mainnet` or `testnet` to select network ID to use with NEAR config and key store
+- `IPFS_GATEWAY_URL` - URL of IPFS gateway to use for `ipfs://` URLs
+- `WEB4_KEY_FILE` - path to SSL key file
+- `WEB4_CERT_FILE` - path to SSL certificate file
+- `PORT` - port to listen on (default: `3000`)
+- `PROXY_PORT` - port to listen on for proxy requests (default: `8080`). HTTPS MITM proxy is run on this port when `WEB4_KEY_FILE` and `WEB4_CERT_FILE` are provided.
+- `FAST_NEAR_URL` - URL of [fast-near](https://github.com/vgrichina/fast-near) RPC server to use for NEAR API. Overrides NEAR RPC config selected by `NODE_ENV`.
+
 # Frequently Asked Questions
 
 ## What are the key advantages of web4?
@@ -310,16 +320,6 @@ curl https://rpc.web4.near.page/status
 
 ## How do I deploy to subaccounts?
 Subaccounts are not currently supported by web4. Use custom domains instead - see [custom domain setup guide](https://github.com/vgrichina/web4/wiki/Custom-Domains).
-
-## Environment variables
-
-- `NODE_ENV` - `mainnet` or `testnet` to select network ID to use with NEAR config and key store
-- `IPFS_GATEWAY_URL` - URL of IPFS gateway to use for `ipfs://` URLs
-- `WEB4_KEY_FILE` - path to SSL key file
-- `WEB4_CERT_FILE` - path to SSL certificate file
-- `PORT` - port to listen on (default: `3000`)
-- `PROXY_PORT` - port to listen on for proxy requests (default: `8080`). HTTPS MITM proxy is run on this port when `WEB4_KEY_FILE` and `WEB4_CERT_FILE` are provided.
-- `FAST_NEAR_URL` - URL of [fast-near](https://github.com/vgrichina/fast-near) RPC server to use for NEAR API. Overrides NEAR RPC config selected by `NODE_ENV`.
 
 # Priorities
 
