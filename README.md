@@ -227,26 +227,83 @@ This works same as `near.page` but for contracts deployed on testnet. Every `acc
 
 # Frequently Asked Questions
 
+## What are the key advantages of web4?
+* Censorship resistance through decentralized blockchain hosting
+* Low cost - only pay for transactions
+* Permanent availability via NEAR blockchain
+
 ## How does authentication work with web4?
-Authentication is handled through `/web4/login` and `/web4/logout` endpoints. Account information is stored in cookies, with the current account ID available in `web4_account_id` cookie. See the Authentication section above for implementation details.
+Authentication is handled through `/web4/login` and `/web4/logout` endpoints. Account information is stored in cookies, with the current account ID available in `web4_account_id` cookie. Example usage:
+
+```javascript
+// Login
+window.location.href = '/web4/login'
+// Get current user
+const accountId = Cookies.get('web4_account_id')
+```
+
+See the Authentication section above for more details.
 
 ## What's the difference between web4/login and integrating a wallet directly?
-Using web4's authentication endpoints allows your application to remain wallet-agnostic. Your app will continue working without modifications as wallet implementations change.
+Using web4's authentication endpoints allows your application to remain wallet-agnostic. Your app will continue working without modifications as wallet implementations change. See [wallet integration guide](https://docs.near.org/tools/wallet-selector) for comparison.
 
 ## How do I handle large files?
-NEARFS is the recommended way to store large files on web4. It's more efficient and cost-effective than contract storage. The `web4-deploy` tool handles uploading files to NEARFS automatically.
+NEARFS is the recommended way to store large files on web4. Deploy files using:
+```bash
+npx web4-deploy --nearfs ./path/to/files
+```
+See [web4-deploy docs](https://github.com/vgrichina/web4-deploy#readme) for more options.
 
 ## Can I use web4 with Rust?
-Yes! Check out the [sample web4 project made with Rust](https://github.com/frol/near-web4-demo) or use the [Rust starter project](https://github.com/zavodil/near-web4-contract).
+Yes! Start with the [Rust starter project](https://github.com/zavodil/near-web4-contract):
+```bash
+git clone https://github.com/zavodil/near-web4-contract
+cd near-web4-contract
+./build.sh
+```
 
 ## How do I deploy my web4 site?
-Use the [web4-deploy](https://github.com/vgrichina/web4-deploy) tool to deploy your site. It handles uploading files to IPFS/NEARFS and updating your smart contract automatically.
+Use web4-deploy:
+```bash
+npx web4-deploy ./dist
+```
+This uploads files to IPFS/NEARFS and updates your smart contract. See [deployment guide](https://github.com/vgrichina/web4-deploy#readme).
+
+## How can I fetch account state?
+Use the web4 RPC endpoint:
+```bash
+curl https://rpc.web4.near.page/account/your-account.near/state
+```
+
+## How can I store NFTs on web4?
+Deploy a web4 contract implementing the [NEP-171 standard](https://nomicon.io/Standards/NonFungibleToken/Core). Example:
+```bash
+git clone https://github.com/near-examples/NFT
+cd NFT
+yarn deploy
+```
+
+## How can I access my local app bundle?
+Run local web4 gateway:
+```bash
+npx web4-near
+```
+Then access your app at `https://your-account.near.page`
+
+## How can I contribute?
+Check [CONTRIBUTING.md](https://github.com/vgrichina/web4/blob/main/CONTRIBUTING.md) for guidelines. Start with good first issues:
+```bash
+open https://github.com/vgrichina/web4/labels/good%20first%20issue
+```
 
 ## Can the web4 RPC return different data than direct contract calls?
-Yes, if the RPC indexer falls behind the latest blocks. Always check response freshness for time-critical applications.
+Yes, if the RPC indexer falls behind the latest blocks. Check indexer status:
+```bash
+curl https://rpc.web4.near.page/status
+```
 
 ## How do I deploy to subaccounts?
-Subaccounts are not currently supported by web4. Use custom domains instead for similar functionality.
+Subaccounts are not currently supported by web4. Use custom domains instead - see [custom domain setup guide](https://github.com/vgrichina/web4/wiki/Custom-Domains).
 
 ## Environment variables
 
