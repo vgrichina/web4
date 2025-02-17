@@ -11,12 +11,12 @@
 
 Quick Start:
 ```bash
-# Create NEAR app with React
-npx create-near-app@latest my-web4-app
+# Create NEAR app with Next.js
+npx create-near-app@latest my-web4-app --frontend next-app
 cd my-web4-app
 
-# Build your app
-npm run build
+# Install dependencies and build
+npm install && npm run build
 
 # Deploy to your account
 npx web4-deploy ./dist --accountId your-account.near
