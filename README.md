@@ -59,8 +59,15 @@ This allows seamless integration with existing web frameworks while maintaining 
 
 ## Known web4 sites
 
-- https://awesomeweb4.near.page
-- https://thewiki.near.page
+Featured sites:
+- https://devhub.near.page - NEAR Developer Hub
+- https://web4.near.page - Web4 project homepage
+- https://treasury-auroralabs.near.page - NEAR Treasury DAOs
+- https://svelt.near.page - Svelte starter template
+- https://awesomeweb4.near.page - Web4 app catalog
+- https://thewiki.near.page - Decentralized wiki
+
+Community sites:
 - https://slimebook.near.page
 - https://lands.near.page
 - https://zavodil.near.page
@@ -76,6 +83,8 @@ This allows seamless integration with existing web frameworks while maintaining 
 - https://wlog.near.page
 - https://1chess.near.page
 - https://vlad.near.page
+
+See more examples at https://awesomeweb4.near.page
 
 ## Useful tools
 
