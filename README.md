@@ -225,6 +225,29 @@ This works same as `near.page` but for contracts deployed on testnet. Every `acc
     ```
 4. Setup browser to use [automatic proxy configuration file](https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling/Proxy_Auto-Configuration_PAC_file) at `http://localhost:8080/` or to use `localhost:8080` as an HTTPS proxy server. 
 
+# Frequently Asked Questions
+
+## How does authentication work with web4?
+Authentication is handled through `/web4/login` and `/web4/logout` endpoints. Account information is stored in cookies, with the current account ID available in `web4_account_id` cookie. See the Authentication section above for implementation details.
+
+## What's the difference between web4/login and integrating a wallet directly?
+Using web4's authentication endpoints allows your application to remain wallet-agnostic. Your app will continue working without modifications as wallet implementations change.
+
+## How do I handle large files?
+NEARFS is the recommended way to store large files on web4. It's more efficient and cost-effective than contract storage. The `web4-deploy` tool handles uploading files to NEARFS automatically.
+
+## Can I use web4 with Rust?
+Yes! Check out the [sample web4 project made with Rust](https://github.com/frol/near-web4-demo) or use the [Rust starter project](https://github.com/zavodil/near-web4-contract).
+
+## How do I deploy my web4 site?
+Use the [web4-deploy](https://github.com/vgrichina/web4-deploy) tool to deploy your site. It handles uploading files to IPFS/NEARFS and updating your smart contract automatically.
+
+## Can the web4 RPC return different data than direct contract calls?
+Yes, if the RPC indexer falls behind the latest blocks. Always check response freshness for time-critical applications.
+
+## How do I deploy to subaccounts?
+Subaccounts are not currently supported by web4. Use custom domains instead for similar functionality.
+
 ## Environment variables
 
 - `NODE_ENV` - `mainnet` or `testnet` to select network ID to use with NEAR config and key store
