@@ -299,25 +299,6 @@ curl https://rpc.web4.near.page/status
 ## How do I deploy to subaccounts?
 Subaccounts are not currently supported by web4. Use custom domains instead - see [custom domain setup guide](https://github.com/vgrichina/web4/wiki/Custom-Domains).
 
-# Contributing
-
-We welcome contributions to web4! Here's how you can help:
-
-## Join the Community
-Join our [Telegram group](https://t.me/web4near) to discuss ideas, ask questions, and connect with other developers.
-
-## Share Your Examples
-We need more example applications, especially:
-- Templates for different frameworks (React, Vue, Angular, etc.)
-- Apps in different languages (Rust, AssemblyScript, JavaScript)
-- Integration examples with various NEAR protocols
-- Real-world applications showcasing web4 capabilities
-
-## Development
-- Check out [open issues](https://github.com/vgrichina/web4/issues)
-- Submit bug reports and feature requests
-- Improve documentation
-
 ## Environment variables
 
 - `NODE_ENV` - `mainnet` or `testnet` to select network ID to use with NEAR config and key store
@@ -384,3 +365,22 @@ This project aims to make trade offs based on these priorities:
     - [ ] web4 wallet
     - [ ] App launcher for wallet (pre-selecting necessary account in app)
     - [ ] Instant mobile apps using WebAssembly
+
+# Contributing
+
+We welcome contributions to web4! Here's how you can help:
+
+## Join the Community
+Join our [Telegram group](https://t.me/web4near) to discuss ideas, ask questions, and connect with other developers.
+
+## Share Your Examples
+We need more example applications, especially:
+- Templates for different frameworks (React, Vue, Angular, etc.)
+- Apps in different languages (Rust, AssemblyScript, JavaScript)
+- Integration examples with various NEAR protocols
+- Real-world applications showcasing web4 capabilities
+
+## Development
+- Check out [open issues](https://github.com/vgrichina/web4/issues)
+- Submit bug reports and feature requests
+- Improve documentation
