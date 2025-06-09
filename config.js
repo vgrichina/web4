@@ -7,7 +7,7 @@ function getConfig(env) {
     case 'mainnet':
         return {
             networkId: 'mainnet',
-            nodeUrl: 'https://rpc.mainnet.near.org',
+            nodeUrl: process.env.NODE_URL || 'https://rpc.mainnet.near.org',
             contractName: CONTRACT_NAME,
             walletUrl: 'https://wallet.near.org',
             helperUrl: 'https://helper.mainnet.near.org',
@@ -18,7 +18,7 @@ function getConfig(env) {
     case 'testnet':
         return {
             networkId: 'testnet',
-            nodeUrl: 'https://rpc.testnet.near.org',
+            nodeUrl: process.env.NODE_URL || 'https://rpc.testnet.near.org',
             contractName: CONTRACT_NAME,
             walletUrl: 'https://wallet.testnet.near.org',
             helperUrl: 'https://helper.testnet.near.org',
@@ -28,7 +28,7 @@ function getConfig(env) {
     case 'betanet':
         return {
             networkId: 'betanet',
-            nodeUrl: 'https://rpc.betanet.near.org',
+            nodeUrl: process.env.NODE_URL || 'https://rpc.betanet.near.org',
             contractName: CONTRACT_NAME,
             walletUrl: 'https://wallet.betanet.near.org',
             helperUrl: 'https://helper.betanet.near.org',
@@ -38,7 +38,7 @@ function getConfig(env) {
     case 'local':
         return {
             networkId: 'local',
-            nodeUrl: 'http://localhost:3030',
+            nodeUrl: process.env.NODE_URL || 'http://localhost:3030',
             keyPath: `${process.env.HOME}/.near/validator_key.json`,
             walletUrl: 'http://localhost:4000/wallet',
             contractName: CONTRACT_NAME,
@@ -47,14 +47,14 @@ function getConfig(env) {
     case 'ci':
         return {
             networkId: 'shared-test',
-            nodeUrl: 'https://rpc.ci-testnet.near.org',
+            nodeUrl: process.env.NODE_URL || 'https://rpc.ci-testnet.near.org',
             contractName: CONTRACT_NAME,
             masterAccount: 'test.near',
         };
     case 'ci-betanet':
         return {
             networkId: 'shared-test-staging',
-            nodeUrl: 'https://rpc.ci-betanet.near.org',
+            nodeUrl: process.env.NODE_URL || 'https://rpc.ci-betanet.near.org',
             contractName: CONTRACT_NAME,
             masterAccount: 'test.near',
         };
