@@ -2,6 +2,7 @@ const {
     connect,
     keyStores: { InMemoryKeyStore },
     KeyPair,
+    providers: { JsonRpcProvider }
 } = require('near-api-js');
 
 const fetch = require('node-fetch');
