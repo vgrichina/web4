@@ -94,7 +94,7 @@ export function web4_get(request: Web4Request): Web4Response {
     }
 
     //  Serve content from IPFS
-    if (request.path == "/" || request.path.endsWith('.css')) {
+    if (request.path == "/" || request.path.endsWith('.css') || request.path == "/llms.txt") {
         const staticUrl = storage.getString(WEB4_STATIC_URL_KEY);
         if (staticUrl != null) {
             return bodyUrl(`${staticUrl!}${request.path}`);
