@@ -1,0 +1,169 @@
+# web4 - NEAR Blockchain HTTP Gateway
+
+This is the **web4** project - a decentralized HTTP gateway that enables NEAR smart contracts to serve web content directly. It allows hosting websites where frontend, backend, and blockchain logic are all managed by a single WebAssembly smart contract.
+
+## Project Overview
+
+Web4 enables decentralized web hosting on the NEAR blockchain by:
+- Mapping `.near.page` domains to NEAR account contracts
+- Proxying HTTP requests to smart contract `web4_get` methods
+- Supporting content serving from IPFS, NEARFS, and direct contract responses
+- Providing seamless wallet authentication and transaction signing
+
+## Architecture
+
+### Core Components
+- **HTTP Gateway** (`app.js`): Koa.js server that proxies requests to NEAR contracts
+- **Smart Contract** (`contract/assembly/`): AssemblyScript contracts implementing `web4_get`
+- **Wallet Adapter** (`wallet-adapter/`): Authentication flow for NEAR wallets
+- **Domain Resolution**: Maps custom domains to NEAR account IDs via CNAME records
+
+### Request Flow
+1. HTTP request to `*.near.page` or custom domain
+2. Gateway resolves domain to NEAR account contract
+3. Calls `web4_get(request: Web4Request): Web4Response` on contract
+4. Contract can return HTML, redirect to IPFS/external URLs, or request data preloading
+5. Authentication handled via `/web4/login` and `/web4/logout` endpoints
+
+## Key Files and Structure
+
+### Main Application
+- `app.js` - Main Koa.js HTTP gateway server with routing and NEAR integration
+- `config.js` - NEAR network configuration
+- `package.json` - Node.js dependencies and scripts
+- `bin/web4` - CLI entry point
+
+### Smart Contract (AssemblyScript)
+- `contract/assembly/web4.ts` - Web4 request/response types and helper functions
+- `contract/assembly/index.ts` - Main contract implementation
+- `contract/package.json` - Contract build configuration
+
+### Wallet Integration
+- `wallet-adapter/wallet-adapter.js` - Browser wallet integration
+- `wallet-adapter/login.html` - Login page template
+- `wallet-adapter/sign.html` - Transaction signing page
+
+### Testing
+- `test/app.test.js` - Unit tests using tape
+- `test/e2e.sh` - End-to-end testing script
+
+## Development Commands
+
+```bash
+# Build and deploy
+npm run build              # Build AssemblyScript contract
+npm run start             # Start local development server
+npm run dev               # Watch for changes and restart
+
+# Testing
+npm run test              # Unit tests
+npm run test:e2e          # End-to-end tests
+npm run test:all          # All tests including fast-near variant
+
+# Deployment
+npm run deploy:contract   # Deploy to web4.near
+npm run deploy:website    # Deploy website content
+```
+
+## Environment Configuration
+
+Set these variables for different network configurations:
+- `NODE_ENV` or `NEAR_ENV`: `mainnet`, `testnet`, `local`, `development`
+- `CONTRACT_NAME`: NEAR account ID for the contract
+- `IPFS_GATEWAY_URL`: IPFS gateway URL (default: cloudflare-ipfs.com)
+- `NEARFS_GATEWAY_URL`: NEARFS gateway URL (default: ipfs.web4.near.page)
+- `FAST_NEAR_URL`: Optional fast-near RPC endpoint for better performance
+
+## Web4 Contract Interface
+
+### Web4Request
+```typescript
+class Web4Request {
+    accountId: string | null;  // Authenticated user account
+    path: string;              // Request path
+    params: Map<string, string>;
+    query: Map<string, Array<string>>;
+    preloads: Map<string, Web4Response>; // Preloaded dependency data
+}
+```
+
+### Web4Response
+```typescript
+class Web4Response {
+    contentType: string;       // MIME type
+    status: u32;              // HTTP status code
+    body: Uint8Array;         // Direct response body
+    bodyUrl: string;          // External URL to load content from
+    preloadUrls: string[];    // URLs to preload for next request
+    cacheControl: string;     // Cache control header
+}
+```
+
+### Helper Functions
+- `htmlResponse(text: string)` - Return HTML content
+- `svgResponse(text: string)` - Return SVG content
+- `bodyUrl(url: string)` - Redirect to external URL (IPFS/HTTP)
+- `preloadUrls(urls: string[])` - Request data preloading
+- `status(code: u32)` - Return HTTP status code
+
+## Authentication Flow
+
+Web4 provides simplified wallet integration:
+- Login: `/web4/login` redirects to wallet, sets `web4_account_id` cookie
+- Logout: `/web4/logout` clears authentication cookies
+- Transaction signing: POST to `/web4/contract/{account}/{method}` handles wallet signing
+- App-specific keys stored in `web4_private_key` cookie for gasless transactions
+
+## Content Serving Priority
+
+1. Direct contract response (`body` field)
+2. External URL content (`bodyUrl` field) - supports IPFS, NEARFS, and HTTP URLs
+3. Data preloading cycle for dependent API calls via `preloadUrls`
+
+## Dependencies
+
+### Production
+- `koa` ^2.13.1 - Web application framework
+- `koa-router` ^10.0.0 - Router middleware
+- `near-api-js` ^2.1.4 - NEAR blockchain JavaScript API
+- `node-fetch` ^2.6.1 - HTTP client for Node.js
+- `qs` ^6.11.1 - Query string parsing
+- `raw-body` ^2.5.2 - Raw body parsing middleware
+
+### Development
+- `tape` ^5.6.3 - Testing framework
+- `nodemon` ^2.0.7 - Development server with auto-restart
+- `browserify` ^17.0.0 - Module bundler for wallet adapter
+- `marked` ^3.0.4 - Markdown to HTML converter
+
+## Known Web4 Sites
+
+Featured examples:
+- https://devhub.near.page - NEAR Developer Hub
+- https://web4.near.page - Web4 project homepage
+- https://treasury-auroralabs.near.page - NEAR Treasury DAOs
+- https://svelt.near.page - Svelte starter template
+- https://awesomeweb4.near.page - Web4 app catalog
+- https://thewiki.near.page - Decentralized wiki
+
+## Testing Approach
+
+The project uses `tape` for unit tests and custom E2E scripts. Tests mock NEAR API responses and verify HTTP gateway behavior. The testing strategy includes:
+- Unit tests for core functionality
+- E2E tests with real NEAR contract deployment
+- Fast-near RPC variant testing for performance validation
+
+## Domain Resolution
+
+Web4 supports multiple domain types:
+- `.near.page` subdomains (e.g., `account.near.page` → `account.near`)
+- `.testnet.page` subdomains for testnet contracts
+- Custom domains via CNAME records pointing to `.near.page` domains
+- Fallback to `web4.{account}` for contracts on subaccounts
+
+## Performance Features
+
+- Fast-near RPC integration for improved response times
+- Content caching with appropriate cache-control headers
+- IPFS gateway failover for content availability
+- Preloading mechanism to reduce round-trips for data dependencies
