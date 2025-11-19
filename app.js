@@ -30,6 +30,7 @@ async function withNear(ctx, next) {
     try {
         await next();
     } catch (e) {
+        ctx.debug('Error in request:', e.type, e.message);
         switch (e.type) {
             case 'AccountDoesNotExist':
                 ctx.throw(404, e.message);
@@ -241,6 +242,7 @@ router.post('/web4/contract/:contractId/:methodName', withNear, withAccountId, r
                 debug('Result', result);
                 // TODO: when used from fetch, etc shouldn't really redirect. Judge based on Accepts header?
                 if (ctx.request.type == 'application/x-www-form-urlencoded') {
+                    debug('Redirecting to', callbackUrl, 'type:', typeof callbackUrl, 'length:', callbackUrl.length);
                     ctx.redirect(callbackUrl);
                     // TODO: Pass transaction hashes, etc to callback?
                 } else {
