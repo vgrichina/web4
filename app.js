@@ -411,18 +411,37 @@ router.get('/(.*)', withNear, withContractId, withAccountId, async ctx => {
                 urlsToCheck.push(`${IPFS_GATEWAY_URL}/ipfs/${hostname}${pathname}${search}`);
             }
 
-            let res
+            let res;
+            let lastError;
             for (let url of urlsToCheck) {
                 debug('Trying', url);
-                res = await fetch(url);
-                if (res.status == 200) {
-                    break;
+                try {
+                    const startTime = Date.now();
+                    res = await fetch(url);
+                    const elapsed = Date.now() - startTime;
+                    debug('Fetch completed', url, 'status:', res.status, 'time:', elapsed, 'ms');
+                    if (res.status == 200) {
+                        break;
+                    }
+                    debug('Non-200 response from', url, 'status:', res.status);
+                } catch (err) {
+                    debug('Fetch FAILED', url, 'error:', err.message, err.code);
+                    lastError = err;
                 }
             }
+
+            if (!res) {
+                debug('ALL fetches failed for', bodyUrl, 'lastError:', lastError?.message);
+                ctx.throw(502, `Failed to fetch content: ${lastError?.message || 'unknown error'}`);
+            }
+
             debug('Loaded', absoluteUrl);
 
             // TODO: Pass through error?
             if (!status) {
+                if (res.status >= 400) {
+                    debug('Upstream returned error', res.status, 'for', bodyUrl);
+                }
                 ctx.status = res.status;
             }
             debug('status', ctx.status);
