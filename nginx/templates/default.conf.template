@@ -1,5 +1,10 @@
 proxy_cache_path /var/nginx-cache levels=1:2 keys_zone=small:1m inactive=1m;
 
+log_format debug_upstream '$remote_addr - [$time_local] "$request" '
+    '$status $body_bytes_sent '
+    'up: $upstream_status/$upstream_response_time '
+    'cache: $upstream_cache_status';
+
 upstream web4 {
     server ${NGINX_UPSTREAM_HOST}:${NGINX_UPSTREAM_PORT};
 
@@ -28,6 +33,7 @@ map $http_referer $bad_referer {
 
 server {
     listen 80 default_server;
+    access_log /var/log/nginx/access.log debug_upstream;
 
     if ($bad_referer) {
         return 444;
