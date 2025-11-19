@@ -383,7 +383,7 @@ test('/web4/contract/test.near/setNestedObject method call with nested object in
         .send('topLevel=foo');
 
     t.equal(res.status, 302);
-    t.equal(res.text, 'Redirecting to <a href="http://test.near.page/">http://test.near.page/</a>.');
+    t.equal(res.text, 'Redirecting to http://test.near.page/.');
 
     t.ok(transaction);
     t.equal(transaction.receiverId, 'test.near');
